@@ -1,80 +1,77 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Scanner;
 
 /**
  * 
  */
 public class CrochetISAmain {
 	//enumerate insertion points
-	final static int TOP = 0;
-	final static int FRONT_LOOP = 1;
-	final static int BACK_LOOP = 2;
-	final static int FRONT_POST = 3;
-	final static int BACK_POST = 4;
-	final static int BETWEEN = 5;
+	final static String TOP = "top";
+	final static String FRONT_LOOP = "front_loop";
+	final static String BACK_LOOP = "back_loop";
+	final static String FRONT_POST = "front_post";
+	final static String BACK_POST = "back_post";
+	final static String BETWEEN = "between";
 
 	//enumerate stitch types
-	final static int INSERT = 0;
-	final static int YO = 1;
-	final static int PT = 2;
-	final static int MOVE = 3;
-	final static int TURN = 4;
+	final static String INSERT = "insert";
+	final static String YO = "yo";
+	final static String PT = "pt";
+	final static String MOVE = "move";
+	final static String TURN = "turn";
+	final static String PT_ALL = "pt_all";
 	
 	public static void main(String[] args) {
 		//key stitches
-		Integer[] ch = {YO, PT};
-		Integer[] sc = {INSERT, YO, PT, YO, PT, PT};
-		Integer[] hdc = {INSERT, YO, PT, YO, PT, PT, PT};
-		Integer[] dc = {INSERT, YO, PT, YO, PT, PT, YO, PT, PT};
-		ArrayList<Integer> CH = new ArrayList<Integer>(Arrays.asList(ch));
-		ArrayList<Integer> SC = new ArrayList<Integer>(Arrays.asList(sc));
-		ArrayList<Integer> HDC = new ArrayList<Integer>(Arrays.asList(hdc));
-		ArrayList<Integer> DC = new ArrayList<Integer>(Arrays.asList(dc));
+		String[] ch = {YO, PT};
+		String[] sc = {INSERT, YO, PT, YO, PT, PT};
+		String[] hdc = {YO, INSERT, YO, PT, YO, PT, PT, PT};
+		String[] dc = {YO, INSERT, YO, PT, YO, PT, PT, YO, PT, PT};
+		ArrayList<String> CH = new ArrayList<String>(Arrays.asList(ch));
+		ArrayList<String> SC = new ArrayList<String>(Arrays.asList(sc));
+		ArrayList<String> HDC = new ArrayList<String>(Arrays.asList(hdc));
+		ArrayList<String> DC = new ArrayList<String>(Arrays.asList(dc));
+		ArrayList<String> turn = new ArrayList<String>();
+		turn.add(TURN);
 
 		//decrease stems
-		Integer[] decSC = {INSERT, YO, PT};
-		Integer[] decHDC = {INSERT, YO, PT};
-		Integer[] decDC = {INSERT, YO, PT, YO, PT, PT};
+		String[] decSC = {INSERT, YO, PT};
+		String[] decHDC = {YO, INSERT, YO, PT};
+		String[] decDC = {YO, INSERT, YO, PT, YO, PT, PT};
 
 		//increase (2 in one stitch)
-		ArrayList<Integer> incSC = new ArrayList<Integer>(Arrays.asList(sc));
+		ArrayList<String> incSC = new ArrayList<String>(Arrays.asList(sc));
 		incSC.addAll(Arrays.asList(sc));
-		ArrayList<Integer> incHDC = new ArrayList<Integer>(Arrays.asList(hdc));
+		ArrayList<String> incHDC = new ArrayList<String>(Arrays.asList(hdc));
 		incHDC.addAll(Arrays.asList(hdc));
-		ArrayList<Integer> incDC = new ArrayList<Integer>(Arrays.asList(dc));
+		ArrayList<String> incDC = new ArrayList<String>(Arrays.asList(dc));
 		incDC.addAll(Arrays.asList(dc));
 
 		//decrease (2 together)
-		ArrayList<Integer> dec2SC = new ArrayList<Integer>(Arrays.asList(decSC));
+		ArrayList<String> dec2SC = new ArrayList<String>(Arrays.asList(decSC));
 		dec2SC.add(MOVE);
 		dec2SC.addAll(Arrays.asList(decSC));
 		dec2SC.add(YO);
-		dec2SC.add(PT);
-		dec2SC.add(PT);
-		dec2SC.add(PT);
-		dec2SC.add(PT);
+		dec2SC.add(PT_ALL);
 
-		ArrayList<Integer> dec2HDC = new ArrayList<Integer>(Arrays.asList(decHDC));
+		ArrayList<String> dec2HDC = new ArrayList<String>(Arrays.asList(decHDC));
 		dec2HDC.add(MOVE);
 		dec2HDC.addAll(Arrays.asList(decHDC));
 		dec2HDC.add(YO);
-		dec2HDC.add(PT);
-		dec2HDC.add(PT);
-		dec2HDC.add(PT);
-		dec2HDC.add(PT);
+		dec2HDC.add(PT_ALL);
 
-		ArrayList<Integer> dec2DC = new ArrayList<Integer>(Arrays.asList(decDC));
+		ArrayList<String> dec2DC = new ArrayList<String>(Arrays.asList(decDC));
 		dec2DC.add(MOVE);
 		dec2DC.addAll(Arrays.asList(decDC));
 		dec2DC.add(YO);
-		dec2DC.add(PT);
-		dec2DC.add(PT);
-		dec2DC.add(PT);
-		dec2DC.add(PT);
+		dec2DC.add(PT_ALL);
+
 
 		// create stitch hash map
-		HashMap<String, ArrayList<Integer>> stitchMap = new HashMap<String, ArrayList<Integer>>();
+		HashMap<String, ArrayList<String>> stitchMap = new HashMap<String, ArrayList<String>>();
+		stitchMap.put("turn", turn);
 		stitchMap.put("ch", CH);
 		stitchMap.put("sc", SC);
 		stitchMap.put("hdc", HDC);
@@ -85,6 +82,53 @@ public class CrochetISAmain {
 		stitchMap.put("sc2inc", incSC);
 		stitchMap.put("hdc2inc", incHDC);
 		stitchMap.put("dc2inc", incDC);
+
+		StringBuilder output = new StringBuilder();
+		Scanner scanner = new Scanner(System.in);
+		System.out.println("Enter the file path to pattern: ");
+		String filename = scanner.nextLine();
+		scanner.close();
+		Parser parser = new Parser(filename);
+
+		//Parse initial strings to action values
+		if(parser.newStitches){
+			//implement this functionality
+		}
+		ArrayList<ArrayList<String>> rows = parser.getRows();
+		int currentLoops = 0;
+		for(ArrayList<String> row : rows){
+			for(String stitch : row){
+				if(stitchMap.containsKey(stitch)){
+					ArrayList<String> actions = stitchMap.get(stitch);
+					for(String action : actions){
+						if(action == YO){
+							currentLoops++;
+						}
+						if(action == PT){
+							currentLoops--;
+						}
+						if(action == PT_ALL){
+							for(int i = 0; i < currentLoops; i++){
+								output.append(PT + " ");
+							}
+							currentLoops = 0;
+							continue;
+						}
+						if(action == INSERT){
+							output.append(MOVE + " ");
+						}
+						output.append(action + " ");
+						if(action == TURN){
+							output.append("\n");
+						}
+					}
+				}
+				else{
+					System.out.println("Error: Unrecognized stitch '" + stitch + "'.");
+				}
+			}
+		}
+		System.out.println(output.toString());
 	}
 }
 
