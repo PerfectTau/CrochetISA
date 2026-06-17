@@ -7,7 +7,7 @@ import java.util.Scanner;
  * 
  */
 public class CrochetISAmain {
-	//enumerate insertion points
+	//insertion points
 	final static String TOP = "top";
 	final static String FRONT_LOOP = "front_loop";
 	final static String BACK_LOOP = "back_loop";
@@ -15,7 +15,7 @@ public class CrochetISAmain {
 	final static String BACK_POST = "back_post";
 	final static String BETWEEN = "between";
 
-	//enumerate stitch types
+	//stitch types
 	final static String INSERT = "insert";
 	final static String YO = "yo";
 	final static String PT = "pt";
