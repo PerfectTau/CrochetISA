@@ -23,16 +23,22 @@ public class Parser {
                 fileLines.add(scanner.nextLine());
             }
             scanner.close();
-            int j = 0;
-            for(String line : fileLines){
+            for(int i = 0; i < fileLines.size(); i++){
+                String line = fileLines.get(i);
+                if(!line.endsWith("turn") && i < fileLines.size() - 1){
+                    throw new IllegalArgumentException("Error: non-final lines must end with 'turn': Line " + i + ": " + line);
+                }
                 // TODO: add user defined stitch capability
                 line = line.trim();
                 line = line.replace(" ", "");
                 line = line.toLowerCase();
                 ArrayList<String> tokens = new ArrayList<String>(Arrays.asList(line.split(",")));
                 Pattern pattern = Pattern.compile("^(\\d+)(.*)");
-                for(int i = 0; i < tokens.size(); i++){
-                    String token = tokens.get(i);
+                for(int j = 0; j < tokens.size(); j++){
+                    String token = tokens.get(j);
+                    if(token.equals("turn") && j != tokens.size() - 1){
+                        throw new IllegalArgumentException("Error: 'turn' must be the last token on a line: " + line);
+                    }
                     Matcher matcher = pattern.matcher(token);
                     if(matcher.matches()){
                         // Process the matched groups
@@ -40,15 +46,14 @@ public class Parser {
                         String stitch = matcher.group(2);
                         int countInt = Integer.parseInt(count);
                         for(int k = 0; k < countInt; k++){
-                            tokens.add(i,stitch);
-                            i++;
+                            tokens.add(j,stitch);
+                            j++;
                         }
                         tokens.remove(token);
                     }
                 }
                 rows.add(tokens);
-                System.out.println("Row " + j + ": " + tokens.toString());
-                j++;
+                System.out.println("Row " + i + ": " + tokens.toString());
             }
         }
         catch(FileNotFoundException e){
