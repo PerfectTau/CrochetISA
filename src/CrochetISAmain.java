@@ -19,11 +19,18 @@ public class CrochetISAmain {
 
 	// stitch types
 	final static String INSERT = "insert";
-	final static String YO = "yarn over";
-	final static String PT = "pull through";
+	final static String YO = "yo";
+	final static String PT = "pt";
 	final static String MOVE = "move"; 
 	final static String TURN = "turn";
 	final static String PT_ALL = "pt_all";
+
+	final static int top = 0;
+	final static int front_loop = 1;
+	final static int back_loop = 2;
+	final static int front_post = 3;
+	final static int back_post = 4;
+	final static int between = 5;
 
 	public static void main(String[] args) {
 		//key stitches after stitch insertion
@@ -121,6 +128,12 @@ public class CrochetISAmain {
 		String filename = scanner.nextLine();
 		scanner.close();
 		Parser parser = new Parser(filename);
+		ArrayList<ArrayList<Stitch>> stitchRows = new ArrayList<ArrayList<Stitch>>();
+		String attachPoint = TOP;
+		int id = 0;
+		int nextConnection = 0;
+		int attach;
+		boolean increasing = false;
 
 		//Parse initial strings to action values
 		if(parser.newStitches){
@@ -128,18 +141,83 @@ public class CrochetISAmain {
 		}
 		ArrayList<ArrayList<String>> rows = parser.getRows();
 		int currentLoops = 0;
-		for(ArrayList<String> row : rows){
-			for(String stitch : row){
+		ArrayList<Stitch> firstRow = new ArrayList<Stitch>();
+		for(String stitch : rows.get(0)){
+			// Process the first row
+			if(!stitch.equals("ch") && !stitch.equals("turn")){
+				throw new IllegalArgumentException("Invalid stitch in first row: " + stitch);
+			}
+				Stitch currentStitch = new Stitch(id, stitch);
+				if(stitchMap.containsKey(stitch)){
+					ArrayList<String> actions = stitchMap.get(stitch);
+					for(String action : actions){
+						if(action.equals("decrease")){
+							continue;
+						}
+						if(action.equals(YO) || action.equals(INSERT)){
+							currentLoops++;
+						}
+						if(action.equals(PT)){
+							currentLoops--;
+						}
+						if(action.equals(PT_ALL)){
+							for(int i = 0; i < currentLoops; i++){
+								output.append(PT + ", ");
+							}
+							currentLoops = 0;
+							continue;
+						}
+						if(action.equals(INSERT)){
+							output.append(attachPoint + ", ");
+							continue;
+						}
+						output.append(action + ", ");
+						if(action.equals(TURN)){
+							// deal with stitch row
+							nextConnection = id;
+							output.append("\n");
+						}
+						
+					}
+					if(!stitch.equals(TURN))
+						firstRow.add(currentStitch);
+				}
+				else{
+					//System.out.println("Error: Unrecognized stitch '" + stitch + "'.");
+					throw new IllegalArgumentException("Unrecognized stitch: " + stitch);
+				}
+				id++;
+		}
+		id--;
+		stitchRows.add(firstRow);
+
+		//Process rest of the pattern
+		for(int z = 1; z < rows.size(); z++){
+			ArrayList<String> row = rows.get(z);
+			ArrayList<Stitch> currRow = new ArrayList<Stitch>();
+			for(String stitch : row){				
 				//check attach point
-				String attachPoint = TOP;
-				if(Pattern.matches(".*fl$", stitch))
+				attach = top;
+				if(Pattern.matches(".*fl", stitch)){
 					attachPoint = FRONT_LOOP;
-				else if(Pattern.matches(".*bl$", stitch))
+					attach = front_loop;
+				}
+				else if(Pattern.matches(".*bl", stitch)){
 					attachPoint = BACK_LOOP;
-				else if(Pattern.matches("^fp.*", stitch))
+					attach = back_loop;
+				}
+				else if(Pattern.matches("^fp.*", stitch)){
 					attachPoint = FRONT_POST;
-				else if(Pattern.matches("^bp.*", stitch))
+					attach = front_post;
+				}
+				else if(Pattern.matches("^bp.*", stitch)){
 					attachPoint = BACK_POST;
+					attach = back_post;
+				}
+
+				// Create stitch object with stitch type and attach point
+				Stitch currentStitch = new Stitch(id, stitch);
+				currentStitch.setAttachPoint(attach);
 
 				//check increase/decrease
 				Pattern incDecPattern = Pattern.compile("^(.*)(\\d+)(tog|inc)$");
@@ -152,28 +230,31 @@ public class CrochetISAmain {
 
 					//Increase
 					if(operation.equals("inc")){
-						if(stitchMap.containsKey(stitchType)){ 
+						if(stitchMap.containsKey(stitchType)){
+							currentStitch.addConnection(nextConnection);
 							ArrayList<String> actions = stitchMap.get(stitchType);
 							for(int i = 0; i < count; i++){
 								for(String action : actions){ 
-									if(action == YO || action == INSERT){
+									if(action.equals(YO) || action.equals(INSERT)){
 										currentLoops++;
 									}
-									if(action == PT){
+									if(action.equals(PT)){
 										currentLoops--;
 									}
-									if(action == PT_ALL){
+									if(action.equals(PT_ALL)){
 										for(int j = 0; j < currentLoops; j++){
 											output.append(PT + ", ");
 										}
 										currentLoops = 0;
 										continue;
 									}
-									if(action == INSERT){
+									if(action.equals(INSERT)){
 										output.append(attachPoint + ", ");
 										continue;
 									}
 									output.append(action + ", ");
+									currentStitch.addConnection(nextConnection);
+									currRow.add(currentStitch);
 								}
 							}
 						}
@@ -182,63 +263,109 @@ public class CrochetISAmain {
 						//Decrease
 						if(stitchMap.containsKey(stitchType)){
 							ArrayList<String> actions = stitchMap.get(stitchType);
+							currentStitch.addConnection(nextConnection);
 							// separate action stems for decreasing
 							int index = actions.indexOf("decrease");
 							for(int i = 0; i < count; i++){
 								for(int j = 0; j < index; j++){
 									String action = actions.get(j);
-									if(action == YO || action == INSERT){
+									if(action.equals(YO) || action.equals(INSERT)){
 										currentLoops++;
 									}
-									if(action == PT){
+									if(action.equals(PT)){
 										currentLoops--;
+									}
+									if(action.equals(INSERT)){
+										output.append(attachPoint + ", ");
+										continue;
 									}
 									output.append(action + ", ");
 								}
-								output.append(MOVE + ", ");
+								if(i < count - 1){
+									output.append(MOVE + ", ");
+								}
+								if(increasing){
+									nextConnection++;
+								}
+								else{
+									nextConnection--;
+								}
+								currentStitch.addConnection(nextConnection);
 							}
+
 							output.append(YO + ", ");
-							for(int k = 0; k < currentLoops; k++){
+							for(int k = 0; k < currentLoops + 1; k++){
 								output.append(PT + ", ");
 							}
+							currRow.add(currentStitch);
 						}
 
 					}
 				}
 				else if(stitchMap.containsKey(stitch)){
-					output.append(MOVE + ", ");
 					ArrayList<String> actions = stitchMap.get(stitch);
 					for(String action : actions){
-						if(action == "decrease"){
+						if(action.equals("decrease")){
 							continue;
 						}
-						if(action == YO || action == INSERT){
+						if(action.equals(YO) || action.equals(INSERT)){
 							currentLoops++;
 						}
-						if(action == PT){
+						if(action.equals(PT)){
 							currentLoops--;
 						}
-						if(action == PT_ALL){
+						if(action.equals(PT_ALL)){
 							for(int i = 0; i < currentLoops; i++){
 								output.append(PT + ", ");
 							}
 							currentLoops = 0;
 							continue;
 						}
-						if(action == INSERT){
+						if(action.equals(INSERT)){
 							output.append(attachPoint + ", ");
 							continue;
 						}
 						output.append(action + ", ");
-						if(action == TURN){
+						if(action.equals(TURN)){
+							// deal with stitch row
+							increasing = !increasing;
+							nextConnection = id;
 							output.append("\n");
+							id--;
 						}
+						
+					}
+					if(!stitch.equals(TURN)){
+						if(!stitch.equals("ch")){
+							output.append(MOVE + ", ");
+							currentStitch.addConnection(nextConnection);
+					}
+						currRow.add(currentStitch);
 					}
 				}
 				else{
 					//System.out.println("Error: Unrecognized stitch '" + stitch + "'.");
 					throw new IllegalArgumentException("Unrecognized stitch: " + stitch);
 				}
+				id++;
+				if(!stitch.equals("ch")){
+					if(increasing){
+						nextConnection++;
+					}else{
+						nextConnection--;
+					}
+				}
 			}
-		}System.out.println(output.toString());
+			stitchRows.add(currRow);
+		}
+		System.out.println("Actions: ");
+		System.out.println(output.toString());
+		System.out.println("Stitches:");
+		for(ArrayList<Stitch> row : stitchRows){
+			System.out.println("Row: ");
+			for(Stitch s : row){
+				System.out.println(s.toString());
+			}
+		}
+		
 }}
