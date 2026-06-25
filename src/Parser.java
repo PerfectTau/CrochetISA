@@ -49,6 +49,7 @@ public class Parser {
                             tokens.add(j,stitch);
                             j++;
                         }
+                        j--;
                         tokens.remove(token);
                     }
                 }
