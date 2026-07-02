@@ -43,6 +43,10 @@ public class Stitch {
 		return type;
 	}
 
+	public int getIndex() {
+		return index;
+	}
+
 	public String toString(){
 		return "type: " + type + ", row: " + row + ", index: " + index + ", attachPoint: " + attachPoint + ", connectedTo: " + connectedTo;
 	}
