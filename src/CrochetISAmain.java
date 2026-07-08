@@ -80,8 +80,9 @@ public class CrochetISAmain {
 		ArrayList<ArrayList<Stitch>> stitchRows = new ArrayList<ArrayList<Stitch>>();
 		String attachPoint = TOP;
 		int index = 0;
-		int rowIndex = 0;
+		//int rowIndex = 0;
 		Stitch nextConnection = null;
+		twoItems nextConnectionItem = null;
 		int attach;
 		int connectionIndex = 0;
 
@@ -100,7 +101,7 @@ public class CrochetISAmain {
 			if (!stitch.equals("ch") && !stitch.equals("turn")) {
 				throw new IllegalArgumentException("Invalid stitch in first row: " + stitch);
 			}
-			Stitch currentStitch = new Stitch(rowIndex, index, stitch);
+			Stitch currentStitch = new Stitch(0, index, stitch);
 			if (stitchMap.containsKey(stitch)) {
 				ArrayList<String> actions = stitchMap.get(stitch);
 				for (String action : actions) {
@@ -119,6 +120,7 @@ public class CrochetISAmain {
 					if (action.equals(TURN)) {
 						// deal with stitch row
 						nextConnection = firstRow.get(i-1);
+						nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
 						connectionIndex = i - 1;
 						output.append("\n");
 					}
@@ -133,7 +135,7 @@ public class CrochetISAmain {
 			index++;
 		}
 		stitchRows.add(firstRow);
-		rowIndex++;
+		//rowIndex++;
 
 		// Process rest of the pattern
 		for (int z = 1; z < rows.size(); z++) {
@@ -165,6 +167,7 @@ public class CrochetISAmain {
 				}
 				connectionIndex = prevRow.size() - height - 1;
 				nextConnection = prevRow.get(connectionIndex);
+				nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
 			}
 			for (int s = 0; s < row.size(); s++) {
 				String stitch = row.get(s);
@@ -187,6 +190,7 @@ public class CrochetISAmain {
 				// Create stitch object with stitch type and attach point
 				Stitch currentStitch = new Stitch(z, index, stitch);
 				currentStitch.setAttachPoint(attach);
+				
 
 				// check increase/decrease
 				Pattern incDecPattern = Pattern.compile("^(.*)(\\d+)(tog|inc)$");
@@ -223,7 +227,7 @@ public class CrochetISAmain {
 									output.append(action + ", ");
 								}
 								Stitch newStitch = new Stitch(z, index, stitch);
-								newStitch.addConnection(nextConnection);
+								newStitch.addConnection(nextConnectionItem);
 								index++;
 								currRow.add(newStitch);
 							}
@@ -233,7 +237,7 @@ public class CrochetISAmain {
 						// Decrease
 						if (stitchMap.containsKey(stitchType)) {
 							ArrayList<String> actions = stitchMap.get(stitchType);
-							currentStitch.addConnection(nextConnection);
+							currentStitch.addConnection(nextConnectionItem);
 							// separate action stems for decreasing
 							int actionIndex = actions.indexOf("decrease");
 							for (int i = 0; i < count; i++) {
@@ -258,7 +262,8 @@ public class CrochetISAmain {
 								if(i < count - 1) {
 									connectionIndex--;
 									nextConnection = prevRow.get(connectionIndex);
-									currentStitch.addConnection(nextConnection);
+									nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
+									currentStitch.addConnection(nextConnectionItem);
 								}
 							}
 
@@ -302,6 +307,7 @@ public class CrochetISAmain {
 						if (action.equals(TURN)) {
 							// deal with stitch row
 							nextConnection = currRow.get(index-1);
+							nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
 							output.append("\n");
 							endOfRow = true;
 						}
@@ -310,7 +316,7 @@ public class CrochetISAmain {
 					if (!stitch.equals(TURN)) {
 						if (!stitch.equals("ch")) {
 							output.append(MOVE + ", ");
-							currentStitch.addConnection(nextConnection);
+							currentStitch.addConnection(nextConnectionItem);
 						}
 						currRow.add(currentStitch);
 					}
@@ -331,6 +337,7 @@ public class CrochetISAmain {
 					if (!stitch.equals("ch") && !endOfRow && !(row.get(s+1).equals(TURN) || row.get(s+1).equals("ch"))) {
 						connectionIndex--;
 						nextConnection = prevRow.get(connectionIndex);
+						nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
 						//connectionIndex--;
 					}
 				}
@@ -346,6 +353,63 @@ public class CrochetISAmain {
 				System.out.println(s.toString());
 			}
 		}
+
+		// Draw graph logic test
+		//ArrayList<ArrayList<Stitch>> rows = stitchRows;
+// 		ArrayList<ArrayList<graphNode>> graphNodes = new ArrayList<ArrayList<graphNode>>();
+// for (int i = 0; i < stitchRows.size(); i++) {
+// 	boolean positive = true;
+// 	int stitchSize = 20;
+// 	int rowSpacing = 50;
+//             ArrayList<Stitch> row = stitchRows.get(i);
+//             ArrayList<graphNode> nodeRow = new ArrayList<graphNode>();
+//             for (int j = 0; j < row.size(); j++) {
+//                 Stitch stitch = row.get(j);
+//                 int x = j * stitchSize + 300; // Add some padding
+//                 if(i != 0){
+//                     int xOffset = stitchSize * rows.get(i-1).size();
+//                     if(positive)
+//                         x = j * stitchSize + 300 - xOffset; // Add some padding
+//                     else
+//                         x = -j * stitchSize + xOffset + 300;
+//                 }
+//                 //int x = startX * stitchSize + 300; // Add some padding
+//                 int y = -i * rowSpacing + 400; // Add some padding
+//                 graphNode node = new graphNode(x, y, stitch);
+//                 nodeRow.add(node);
+//                 //g.drawString(stitch.getIndex() + "", x, y + stitchSize + 15); // Draw the index
+//                 //g.drawOval(x, y, stitchSize, stitchSize);
+//                 //g.drawString(stitch.getType(), x, y - 5); // Draw the type above the stitch
+
+//                 int counter = 0;
+//                 if(stitch.connectedTo.size() > 0) { 
+//                     if(counter == 0)              
+//                         System.out.println("Current stitch: " + stitch);
+//                     for(twoItems connectedStitch : stitch.connectedTo) {
+//                         int connectedRow = connectedStitch.getRow();
+//                         int connectedIndex = connectedStitch.getIndex();
+//                         graphNode connectedNode = graphNodes.get(connectedRow).get(connectedIndex);
+//                         if(counter == 0)
+//                             System.out.println("Connected stitch: " + connectedNode.getStitch());
+
+//                         int connectedX = connectedNode.getX();
+//                         int connectedY = connectedNode.getY();
+//                         //int connectedX = connectedIndex * stitchSize + 300;
+//                         //int connectedY = -connectedRow * rowSpacing + 400;
+//                         counter++;
+//                         //g.drawLine(x + stitchSize / 2, y + stitchSize / 2, connectedX + stitchSize / 2, connectedY + stitchSize / 2);
+//                     }
+//                 }
+//             }
+//             positive = !positive;
+//             graphNodes.add(nodeRow);
+//             System.out.println("Row " + i + ": " + nodeRow);
+//         }
+//         for(ArrayList<graphNode> nodeRow : graphNodes){
+//             System.out.println("Node row: " + nodeRow);
+//         }
+		drawGraph graph = new drawGraph(stitchRows);
+		graph.paintComponent(graph.getGraphics());
 
 	}
 }
