@@ -353,61 +353,6 @@ public class CrochetISAmain {
 				System.out.println(s.toString());
 			}
 		}
-
-		// Draw graph logic test
-		//ArrayList<ArrayList<Stitch>> rows = stitchRows;
-// 		ArrayList<ArrayList<graphNode>> graphNodes = new ArrayList<ArrayList<graphNode>>();
-// for (int i = 0; i < stitchRows.size(); i++) {
-// 	boolean positive = true;
-// 	int stitchSize = 20;
-// 	int rowSpacing = 50;
-//             ArrayList<Stitch> row = stitchRows.get(i);
-//             ArrayList<graphNode> nodeRow = new ArrayList<graphNode>();
-//             for (int j = 0; j < row.size(); j++) {
-//                 Stitch stitch = row.get(j);
-//                 int x = j * stitchSize + 300; // Add some padding
-//                 if(i != 0){
-//                     int xOffset = stitchSize * rows.get(i-1).size();
-//                     if(positive)
-//                         x = j * stitchSize + 300 - xOffset; // Add some padding
-//                     else
-//                         x = -j * stitchSize + xOffset + 300;
-//                 }
-//                 //int x = startX * stitchSize + 300; // Add some padding
-//                 int y = -i * rowSpacing + 400; // Add some padding
-//                 graphNode node = new graphNode(x, y, stitch);
-//                 nodeRow.add(node);
-//                 //g.drawString(stitch.getIndex() + "", x, y + stitchSize + 15); // Draw the index
-//                 //g.drawOval(x, y, stitchSize, stitchSize);
-//                 //g.drawString(stitch.getType(), x, y - 5); // Draw the type above the stitch
-
-//                 int counter = 0;
-//                 if(stitch.connectedTo.size() > 0) { 
-//                     if(counter == 0)              
-//                         System.out.println("Current stitch: " + stitch);
-//                     for(twoItems connectedStitch : stitch.connectedTo) {
-//                         int connectedRow = connectedStitch.getRow();
-//                         int connectedIndex = connectedStitch.getIndex();
-//                         graphNode connectedNode = graphNodes.get(connectedRow).get(connectedIndex);
-//                         if(counter == 0)
-//                             System.out.println("Connected stitch: " + connectedNode.getStitch());
-
-//                         int connectedX = connectedNode.getX();
-//                         int connectedY = connectedNode.getY();
-//                         //int connectedX = connectedIndex * stitchSize + 300;
-//                         //int connectedY = -connectedRow * rowSpacing + 400;
-//                         counter++;
-//                         //g.drawLine(x + stitchSize / 2, y + stitchSize / 2, connectedX + stitchSize / 2, connectedY + stitchSize / 2);
-//                     }
-//                 }
-//             }
-//             positive = !positive;
-//             graphNodes.add(nodeRow);
-//             System.out.println("Row " + i + ": " + nodeRow);
-//         }
-//         for(ArrayList<graphNode> nodeRow : graphNodes){
-//             System.out.println("Node row: " + nodeRow);
-//         }
 		drawGraph graph = new drawGraph(stitchRows);
 		graph.paintComponent(graph.getGraphics());
 

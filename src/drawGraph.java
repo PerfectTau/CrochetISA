@@ -1,13 +1,14 @@
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.awt.Graphics;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class drawGraph extends JPanel {
     private ArrayList<ArrayList<Stitch>> rows;
     private ArrayList<ArrayList<graphNode>> graphNodes;
-    private int stitchSize = 20;
+    private int stitchSize = 40;
     private int rowSpacing = 70;
     private JFrame frame;
 
@@ -23,36 +24,63 @@ public class drawGraph extends JPanel {
         calculateNodes();
     }
 
-    // public drawGraph(ArrayList<ArrayList<Stitch>> rows) {
-    //     this.rows = rows;
-    // }
-
     private void calculateNodes(){
-        boolean positive = true;
+        int positive = 1;
+        int currentX = stitchSize + 300;
         for (int i = 0; i < rows.size(); i++) {
             ArrayList<Stitch> row = rows.get(i);
             ArrayList<graphNode> nodeRow = new ArrayList<graphNode>();
+            for(int t = 0; t < row.size(); t++){
+                nodeRow.add(null);
+            }
             for (int j = 0; j < row.size(); j++) {
                 Stitch stitch = row.get(j);
-                int x = j * stitchSize + 300; // Add some padding
                 if(i != 0){
-                    int xOffset = stitchSize * rows.get(i-1).size();
-                    if(positive)
-                        x = j * stitchSize + 300 - xOffset; // Add some padding
-                    else
-                        x = -j * stitchSize + xOffset + 300;
+                    //if(!stitch.getType().equals("ch")){
+                        ArrayList<twoItems> connectedTo = stitch.connectedTo;
+                        if(connectedTo.size() > 0 && j == 0){
+                            int xAvg = 0;
+                            for(int k = 0; k < connectedTo.size(); k++){
+                                twoItems connection = connectedTo.get(k);
+                                int connectedRow = connection.getRow();
+                                int connectedIndex = connection.getIndex();
+                                graphNode connectedNode = graphNodes.get(connectedRow).get(connectedIndex);
+                                xAvg += connectedNode.getX();
+                            }
+                            //if(connectedTo.size() > 1)
+                            currentX = xAvg / connectedTo.size();
+                        }
+                        //else{}
+                        Pattern incPattern = Pattern.compile("^(.*)(\\d+)(inc)$");
+			            Matcher matcher = incPattern.matcher(stitch.getType());
+                        int newX = 0;
+				        if (matcher.matches()) {
+					        int count = Integer.parseInt(matcher.group(2));
+                            int firstX = currentX - (1 - stitchSize/count) * positive;
+                            for(int z = 0; z < count; z++){
+                                newX = firstX + z * stitchSize;
+                                int index;
+                                if(positive == 1)
+                                    index = z;
+                                else
+                                    index = (count - 1) - z;
+                                nodeRow.set(j + index, new graphNode(newX, -i * rowSpacing + 400, row.get(j+index)));
+                            }
+                            j+= count - 1;
+                            currentX += (count) * stitchSize * positive;
+                            continue; 
+                        }
+                    
                 }
-                //int x = startX * stitchSize + 300; // Add some padding
                 int y = -i * rowSpacing + 400; // Add some padding
-                nodeRow.add(new graphNode(x, y, stitch));
+                //currentX += stitchSize * positive;
+                nodeRow.set(j, new graphNode(currentX, y, stitch));
+                currentX += stitchSize * positive;
 
             }
-            positive = !positive;
+            positive *= -1;
             graphNodes.add(nodeRow);
             System.out.println("Row " + i + ": " + nodeRow);
-        }
-        for(ArrayList<graphNode> nodeRow : graphNodes){
-            System.out.println("Node row: " + nodeRow);
         }
     }
 
@@ -81,7 +109,7 @@ public class drawGraph extends JPanel {
 
     private void drawConnections(Graphics g, graphNode currentNode, ArrayList<twoItems> locations){
         for(twoItems location : locations){
-            g.drawLine(currentNode.getX() + stitchSize / 2, currentNode.getY() + stitchSize / 2, location.getRow() + stitchSize / 2, location.getIndex() + stitchSize / 2);
+            g.drawLine(currentNode.getX() + stitchSize/2, currentNode.getY() + stitchSize - 10, location.getRow() + stitchSize/2, location.getIndex() + stitchSize/2);
         }
 
     }
@@ -90,9 +118,13 @@ public class drawGraph extends JPanel {
         Stitch stitch = node.getStitch();
         int x = node.getX();
         int y = node.getY();
-        g.drawString(stitch.getIndex() + "", x, y + stitchSize + 15); // Draw the index
-        g.drawOval(x, y, stitchSize, stitchSize);
+        
+        // if(stitch.getType().equals("ch"))
+        //     g.drawOval(x, y, stitchSize-10, stitchSize-10);
+        // else
+            g.drawOval(x, y, stitchSize, stitchSize);
         g.drawString(stitch.getType(), x, y - 5); // Draw the type above the stitch
+        g.drawString(stitch.getIndex() + "", x, y + stitchSize + 15); // Draw the index
     }
 
     @Override
@@ -108,55 +140,6 @@ public class drawGraph extends JPanel {
                 }
             }
         }
-        // for (int i = 0; i < rows.size(); i++) {
-        //     ArrayList<Stitch> row = rows.get(i);
-        //     ArrayList<graphNode> nodeRow = new ArrayList<graphNode>();
-        //     for (int j = 0; j < row.size(); j++) {
-        //         Stitch stitch = row.get(j);
-        //         int x = j * stitchSize + 300; // Add some padding
-        //         if(i != 0){
-        //             int xOffset = stitchSize * rows.get(i-1).size();
-        //             if(positive)
-        //                 x = j * stitchSize + 300 - xOffset; // Add some padding
-        //             else
-        //                 x = -j * stitchSize + xOffset + 300;
-        //         }
-        //         //int x = startX * stitchSize + 300; // Add some padding
-        //         int y = -i * rowSpacing + 400; // Add some padding
-        //         graphNode node = new graphNode(x, y, stitch);
-        //         nodeRow.add(node);
-        //         g.drawString(stitch.getIndex() + "", x, y + stitchSize + 15); // Draw the index
-        //         g.drawOval(x, y, stitchSize, stitchSize);
-        //         g.drawString(stitch.getType(), x, y - 5); // Draw the type above the stitch
-
-        //         int counter = 0;
-        //         if(stitch.connectedTo.size() > 0) { 
-        //             if(counter == 0)              
-        //                 System.out.println("Current stitch: " + stitch);
-        //             for(twoItems connectedStitch : stitch.connectedTo) {
-        //                 int connectedRow = connectedStitch.getRow();
-        //                 int connectedIndex = connectedStitch.getIndex();
-        //                 graphNode connectedNode = graphNodes.get(connectedRow).get(connectedIndex);
-        //                 if(counter == 0)
-        //                     System.out.println("Connected stitch: " + connectedNode.getStitch());
-
-        //                 int connectedX = connectedNode.getX();
-        //                 int connectedY = connectedNode.getY();
-        //                 //int connectedX = connectedIndex * stitchSize + 300;
-        //                 //int connectedY = -connectedRow * rowSpacing + 400;
-        //                 counter++;
-        //                 g.drawLine(x + stitchSize / 2, y + stitchSize / 2, connectedX + stitchSize / 2, connectedY + stitchSize / 2);
-        //             }
-        //         }
-        //     }
-        //     positive = !positive;
-        //     graphNodes.add(nodeRow);
-        //     System.out.println("Row " + i + ": " + nodeRow);
-        // }
-        // for(ArrayList<graphNode> nodeRow : graphNodes){
-        //     System.out.println("Node row: " + nodeRow);
-        // }
-        //System.out.println("Graph nodes: " + graphNodes);
     }
     
 }
