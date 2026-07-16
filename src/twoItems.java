@@ -15,6 +15,10 @@ public class twoItems {
         return index;
     }
 
+    public void setIndex(int index){
+        this.index = index;
+    }
+
     public String toString() {
         return "Row: " + row + ", Index: " + index;
     }

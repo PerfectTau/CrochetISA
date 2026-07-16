@@ -46,6 +46,7 @@ public class Stitch {
 		return index;
 	}
 
+
 	public String toString(){
 		return "type: " + type + ", row: " + row + ", index: " + index + ", attachPoint: " + attachPoint + ", connectedTo: " + connectedTo;
 	}
