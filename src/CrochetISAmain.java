@@ -72,10 +72,10 @@ public class CrochetISAmain {
 		stitchMap.put("sk", sk);
 
 		StringBuilder output = new StringBuilder();
+		ArrayList<String> actionsList = new ArrayList<String>();
 		Scanner scanner = new Scanner(System.in);
 		System.out.println("Enter the file path to pattern: ");
 		String filename = scanner.nextLine();
-		scanner.close();
 		Parser parser = new Parser(filename);
 		ArrayList<ArrayList<Stitch>> stitchRows = new ArrayList<ArrayList<Stitch>>();
 		String attachPoint = TOP;
@@ -114,9 +114,11 @@ public class CrochetISAmain {
 
 					if (action.equals(INSERT)) {
 						output.append(attachPoint + ", ");
+						actionsList.add(attachPoint);
 						continue;
 					}
 					output.append(action + ", ");
+					actionsList.add(action);
 					if (action.equals(TURN)) {
 						// deal with stitch row
 						nextConnection = firstRow.get(i-1);
@@ -161,6 +163,7 @@ public class CrochetISAmain {
 				for(int t = 1; t <= height; t++){
 					Stitch prevStitch = prevRow.get(prevRow.size() - t);
 					output.append(SK + ", ");
+					actionsList.add(SK);
 					if(!prevStitch.getType().equals("ch")){
 						throw new IllegalArgumentException("Must have a turning chain of at least " + height + " stitches");
 					}
@@ -216,15 +219,18 @@ public class CrochetISAmain {
 									if (action.equals(PT_ALL)) {
 										for (int j = 0; j < currentLoops; j++) {
 											output.append(PT + ", ");
+											actionsList.add(PT);
 										}
 										currentLoops = 0;
 										continue;
 									}
 									if (action.equals(INSERT)) {
 										output.append(attachPoint + ", ");
+										actionsList.add(attachPoint);
 										continue;
 									}
 									output.append(action + ", ");
+									actionsList.add(action);
 								}
 								Stitch newStitch = new Stitch(z, index, stitch);
 								newStitch.addConnection(nextConnectionItem);
@@ -252,12 +258,15 @@ public class CrochetISAmain {
 									}
 									if (action.equals(INSERT)) {
 										output.append(attachPoint + ", ");
+										actionsList.add(attachPoint);
 										continue;
 									}
 									output.append(action + ", ");
+									actionsList.add(action);
 								}
 								if (i < count - 1) {
 									output.append(MOVE + ", ");
+									actionsList.add(MOVE);
 								}
 								if(i < count - 1) {
 									connectionIndex--;
@@ -269,8 +278,10 @@ public class CrochetISAmain {
 
 							// Finish decrease (YO, PT_ALL)
 							output.append(YO + ", ");
+							actionsList.add(YO);
 							for (int k = 0; k < currentLoops + 1; k++) {
 								output.append(PT + ", ");
+								actionsList.add(PT);
 							}
 							currRow.add(currentStitch);
 						}
@@ -292,18 +303,21 @@ public class CrochetISAmain {
 						if (action.equals(PT_ALL)) {
 							for (int i = 0; i < currentLoops; i++) {
 								output.append(PT + ", ");
+								actionsList.add(PT);
 							}
 							currentLoops = 0;
 							continue;
 						}
 						if (action.equals(INSERT)) {
 							output.append(attachPoint + ", ");
+							actionsList.add(attachPoint);
 							continue;
 						}
 						if(action.equals(SK)){
 							connectionIndex--;
 						}
 						output.append(action + ", ");
+						actionsList.add(action);
 						if (action.equals(TURN)) {
 							// deal with stitch row
 							nextConnection = currRow.get(index-1);
@@ -316,6 +330,7 @@ public class CrochetISAmain {
 					if (!stitch.equals(TURN)) {
 						if (!stitch.equals("ch")) {
 							output.append(MOVE + ", ");
+							actionsList.add(MOVE);
 							currentStitch.addConnection(nextConnectionItem);
 						}
 						currRow.add(currentStitch);
@@ -353,8 +368,43 @@ public class CrochetISAmain {
 				System.out.println(s.toString());
 			}
 		}
-		drawGraph graph = new drawGraph(stitchRows);
-		graph.paintComponent(graph.getGraphics());
+		System.out.println();
+		stepThroughPattern(actionsList, scanner);
+		// drawGraph graph = new drawGraph(stitchRows);
+		// graph.paintComponent(graph.getGraphics());
+		scanner.close();
 
+	}
+
+
+	private static void stepThroughPattern(ArrayList<String> actions, Scanner inputScan){
+		loopLogic logic = new loopLogic(actions);
+
+		while(true){
+			//print current action
+			int actionIndex = logic.getActionIndex();
+			if(actionIndex >= actions.size()){
+					System.out.println("No more actions to process");
+					break;
+			}
+			String currAction = actions.get(actionIndex);
+			System.out.println("Next Action: " + currAction);
+			ArrayList<ArrayList<loop>> loops = logic.getLoops();
+			for(int i = 0; i < loops.size(); i++){
+				ArrayList<loop> row = loops.get(i);
+				System.out.println("Row " + i + ": " + row.toString());
+			}
+			System.out.println("Row " + loops.size() + ": " + logic.getCurrRow());
+			System.out.println("Hook: " + logic.getHook());
+			System.out.println("To process next action press 'N' ");
+			System.out.println("To exit type 'exit' ");
+			String nextLine = inputScan.nextLine();
+
+			if(nextLine.equals("N") || nextLine.equals("n")){
+				logic.processNextAction();
+			}
+			if(nextLine.equals("exit"))
+				break;
+		}
 	}
 }
