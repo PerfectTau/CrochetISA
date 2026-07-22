@@ -99,6 +99,7 @@ public class CrochetISAmain {
 			String stitch = rows.get(0).get(i);
 			// Process the first row
 			if (!stitch.equals("ch") && !stitch.equals("turn")) {
+				scanner.close();
 				throw new IllegalArgumentException("Invalid stitch in first row: " + stitch);
 			}
 			Stitch currentStitch = new Stitch(0, index, stitch);
@@ -132,6 +133,7 @@ public class CrochetISAmain {
 					firstRow.add(currentStitch);
 			} else {
 				// System.out.println("Error: Unrecognized stitch '" + stitch + "'.");
+				scanner.close();
 				throw new IllegalArgumentException("Unrecognized stitch: " + stitch);
 			}
 			index++;
@@ -165,6 +167,7 @@ public class CrochetISAmain {
 					output.append(SK + ", ");
 					actionsList.add(SK);
 					if(!prevStitch.getType().equals("ch")){
+						scanner.close();
 						throw new IllegalArgumentException("Must have a turning chain of at least " + height + " stitches");
 					}
 				}
@@ -229,6 +232,9 @@ public class CrochetISAmain {
 										actionsList.add(attachPoint);
 										continue;
 									}
+									if(action.equals("decrease")){
+										continue;
+									}
 									output.append(action + ", ");
 									actionsList.add(action);
 								}
@@ -239,6 +245,8 @@ public class CrochetISAmain {
 							}
 						}
 						index--;
+						output.append(MOVE + ", ");
+						actionsList.add(MOVE);
 					} else {
 						// Decrease
 						if (stitchMap.containsKey(stitchType)) {
@@ -337,16 +345,19 @@ public class CrochetISAmain {
 					}
 				} else {
 					// System.out.println("Error: Unrecognized stitch '" + stitch + "'.");
+					scanner.close();
 					throw new IllegalArgumentException("Unrecognized stitch: " + stitch);
 				}
 				index++;
 				if(connectionIndex < 0){
+					scanner.close();
 					throw new IllegalArgumentException("Row " + z + " is too long. You may be missing increases.");
 				}
 				if (s < row.size() - 1) {
 					String nextStitch = row.get(s + 1);
 					if(connectionIndex - 1 < 0 && !(nextStitch.equals("ch") || nextStitch.equals(TURN) || nextStitch.equals(SK))){
 						System.out.println("Current Stitch: " + stitch + ", Next Stitch: " + nextStitch);
+						scanner.close();
 						throw new IllegalArgumentException("Row " + z + " is too long. You may be missing increases.");
 					}
 					if (!stitch.equals("ch") && !endOfRow && !(row.get(s+1).equals(TURN) || row.get(s+1).equals("ch"))) {
@@ -382,13 +393,17 @@ public class CrochetISAmain {
 
 		while(true){
 			//print current action
+			boolean done = false;
 			int actionIndex = logic.getActionIndex();
 			if(actionIndex >= actions.size()){
-					System.out.println("No more actions to process");
-					break;
+					System.out.println("Processing Final Action");
+					done = true;
+					//break;
 			}
-			String currAction = actions.get(actionIndex);
-			System.out.println("Next Action: " + currAction);
+			else{
+				String currAction = actions.get(actionIndex);
+				System.out.println("Next Action: " + currAction);
+			}
 			ArrayList<ArrayList<loop>> loops = logic.getLoops();
 			for(int i = 0; i < loops.size(); i++){
 				ArrayList<loop> row = loops.get(i);
@@ -396,12 +411,29 @@ public class CrochetISAmain {
 			}
 			System.out.println("Row " + loops.size() + ": " + logic.getCurrRow());
 			System.out.println("Hook: " + logic.getHook());
-			System.out.println("To process next action press 'N' ");
+			// if(done){
+			// 	System.out.println();
+			// 	System.out.println("Exiting...");
+			// 	break;
+			// }
+			if(!done)
+				System.out.println("To process next action press 'n' ");
+			if(actionIndex > 0)
+				System.out.println("To go back one action press 'b' ");
 			System.out.println("To exit type 'exit' ");
 			String nextLine = inputScan.nextLine();
 
 			if(nextLine.equals("N") || nextLine.equals("n")){
-				logic.processNextAction();
+				if(done)
+					System.out.println("Done processing Pattern.");
+				else
+					logic.processNextAction();
+			}
+			else if(nextLine.equals("B") || nextLine.equals("b")){
+				if(actionIndex > 0)
+					logic.undoLastAction();
+				else
+					System.out.println("Unable to undo initialization.");
 			}
 			if(nextLine.equals("exit"))
 				break;

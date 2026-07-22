@@ -3,26 +3,30 @@ import java.util.ArrayList;
 public class loop {
     private int id;
     private int stitchId;
-    private ArrayList<loop> attachedTo;
+    private ArrayList<Integer> attachedTo;
     private boolean top;
 
     public loop(int id, int stitchId){
         this.id = id;
         this.stitchId = stitchId;
-        attachedTo = new ArrayList<loop>();
+        attachedTo = new ArrayList<Integer>();
         top = false;
     }
 
-    public void addConnection(loop l){
-        attachedTo.add(l);
+    public void addConnection(Integer i){
+        attachedTo.add(i);
     }
 
-    public ArrayList<loop> getConnections(){
+    public boolean removeConnection(Integer i){
+        return attachedTo.remove(i);
+    }
+
+    public ArrayList<Integer> getConnections(){
         return attachedTo;
     }
 
-    public void top(){
-        top = true;
+    public void toggleTop(){
+        top = !top;
     }
 
     public boolean isTop(){
@@ -42,7 +46,7 @@ public class loop {
 	}
 
     public String toString(){
-        return "[Loop: " + id + ", Stitch: " + stitchId + ", Top: " + top + "]";
+        return "[Loop: " + id + ", Stitch: " + stitchId + ", Connected To: " + attachedTo + "]";
     }
 
     @Override
