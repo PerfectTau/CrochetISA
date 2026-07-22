@@ -39,11 +39,17 @@ public class CrochetISAmain {
 		String[] sc = { INSERT, YO, PT, "decrease", YO, PT, PT };
 		String[] hdc = { YO, INSERT, YO, PT, "decrease", YO, PT, PT, PT };
 		String[] dc = { YO, INSERT, YO, PT, YO, PT, PT, "decrease", YO, PT, PT };
+		String[] ss = {INSERT, YO, PT, PT};
+		String[] treble = {YO, YO, INSERT, YO, PT, YO, PT, PT, YO, PT, PT, "decrease", YO, PT, PT};
+		String[] dtr = {YO, YO, YO, INSERT, YO, PT, YO, PT, PT, YO, PT, PT, YO, PT, PT, "decrease", YO, PT, PT};
 
 		ArrayList<String> CH = new ArrayList<String>(Arrays.asList(ch));
 		ArrayList<String> SC = new ArrayList<String>(Arrays.asList(sc));
 		ArrayList<String> HDC = new ArrayList<String>(Arrays.asList(hdc));
 		ArrayList<String> DC = new ArrayList<String>(Arrays.asList(dc));
+		ArrayList<String> SS = new ArrayList<String>(Arrays.asList(ss));
+		ArrayList<String> TR = new ArrayList<String>(Arrays.asList(treble));
+		ArrayList<String> DTR = new ArrayList<String>(Arrays.asList(dtr));
 
 		ArrayList<String> sk = new ArrayList<String>();
 		sk.add(SK);
@@ -54,9 +60,12 @@ public class CrochetISAmain {
 		HashMap<String, ArrayList<String>> stitchMap = new HashMap<String, ArrayList<String>>();
 		stitchMap.put("turn", turn);
 		stitchMap.put("ch", CH);
+		stitchMap.put("ss", SS);
 		stitchMap.put("sc", SC);
 		stitchMap.put("hdc", HDC);
 		stitchMap.put("dc", DC);
+		stitchMap.put("tr", TR);
+		stitchMap.put("dtr", DTR);
 		stitchMap.put("scfl", SC);
 		stitchMap.put("scbl", SC);
 		stitchMap.put("fpsc", SC);
@@ -69,6 +78,18 @@ public class CrochetISAmain {
 		stitchMap.put("dcbl", DC);
 		stitchMap.put("fpdc", DC);
 		stitchMap.put("bpdc", DC);
+		stitchMap.put("ssfl", SS);
+		stitchMap.put("ssbl", SS);
+		stitchMap.put("fpss", SS);
+		stitchMap.put("bpss", SS);
+		stitchMap.put("trfl", TR);
+		stitchMap.put("trbl", TR);
+		stitchMap.put("fptr", TR);
+		stitchMap.put("bptr", TR);
+		stitchMap.put("dtrfl", DTR);
+		stitchMap.put("dtrbl", DTR);
+		stitchMap.put("fpdtr", DTR);
+		stitchMap.put("bpdtr", DTR);
 		stitchMap.put("sk", sk);
 
 		StringBuilder output = new StringBuilder();
