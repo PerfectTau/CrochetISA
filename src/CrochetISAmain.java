@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 
+ * Processes a stitch level crochet pattern to action level and allows the user to step through the action level instructions
  */
 public class CrochetISAmain {
 	// insertion points
@@ -95,8 +95,14 @@ public class CrochetISAmain {
 		StringBuilder output = new StringBuilder();
 		ArrayList<String> actionsList = new ArrayList<String>();
 		Scanner scanner = new Scanner(System.in);
-		System.out.println("Enter the file path to pattern: ");
-		String filename = scanner.nextLine();
+		String filename;
+		if(args.length == 1)
+			filename = args[0];
+		else {
+			System.out.println("Enter the file path to pattern: ");
+			filename = scanner.nextLine();
+		}
+		filename = filename.replaceAll("\"", "");
 		Parser parser = new Parser(filename);
 		ArrayList<ArrayList<Stitch>> stitchRows = new ArrayList<ArrayList<Stitch>>();
 		String attachPoint = TOP;
@@ -114,7 +120,7 @@ public class CrochetISAmain {
 		ArrayList<ArrayList<String>> rows = parser.getRows();
 		int currentLoops = 0;
 
-		//Parse first row (must be chain stitches)
+		//Process first row (must be chain stitches)
 		ArrayList<Stitch> firstRow = new ArrayList<Stitch>();
 		for (int i = 0; i < rows.get(0).size(); i++) {
 			String stitch = rows.get(0).get(i);
@@ -153,14 +159,12 @@ public class CrochetISAmain {
 				if (!stitch.equals(TURN))
 					firstRow.add(currentStitch);
 			} else {
-				// System.out.println("Error: Unrecognized stitch '" + stitch + "'.");
 				scanner.close();
 				throw new IllegalArgumentException("Unrecognized stitch: " + stitch);
 			}
 			index++;
 		}
 		stitchRows.add(firstRow);
-		//rowIndex++;
 
 		// Process rest of the pattern
 		for (int z = 1; z < rows.size(); z++) {
@@ -182,6 +186,10 @@ public class CrochetISAmain {
 				else if(Pattern.matches(".*dc.*", firstStitch)){
 					height = 2;
 				}
+				else if(Pattern.matches(".*tr.*", firstStitch))
+					height = 3;
+				else if(Pattern.matches(".*dtr.*", firstStitch))
+					height = 4;
 
 				for(int t = 1; t <= height; t++){
 					Stitch prevStitch = prevRow.get(prevRow.size() - t);
@@ -316,7 +324,7 @@ public class CrochetISAmain {
 						}
 					}
 				}
-				// Standard (non-increase/decrease) Stitch parsing
+				// Standard (non-increase/decrease) Stitch processing
 				else if (stitchMap.containsKey(stitch)) {
 					ArrayList<String> actions = stitchMap.get(stitch);
 					for (String action : actions) {
@@ -365,7 +373,6 @@ public class CrochetISAmain {
 						currRow.add(currentStitch);
 					}
 				} else {
-					// System.out.println("Error: Unrecognized stitch '" + stitch + "'.");
 					scanner.close();
 					throw new IllegalArgumentException("Unrecognized stitch: " + stitch);
 				}
@@ -385,7 +392,6 @@ public class CrochetISAmain {
 						connectionIndex--;
 						nextConnection = prevRow.get(connectionIndex);
 						nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
-						//connectionIndex--;
 					}
 				}
 			}
@@ -411,20 +417,17 @@ public class CrochetISAmain {
 
 	private static void stepThroughPattern(ArrayList<String> actions, Scanner inputScan){
 		loopLogic logic = new loopLogic(actions);
+		boolean done = false;
+		System.out.println("Press 'h' for help");
+		System.out.println("To process next action press 'n' ");
+		System.out.println("To go back one action press 'b' ");
+		System.out.println("To exit type 'exit' ");
 
 		while(true){
 			//print current action
-			boolean done = false;
 			int actionIndex = logic.getActionIndex();
-			if(actionIndex >= actions.size()){
-					System.out.println("Processing Final Action");
-					done = true;
-					//break;
-			}
-			else{
-				String currAction = actions.get(actionIndex);
-				System.out.println("Next Action: " + currAction);
-			}
+			String currAction = "";
+			
 			ArrayList<ArrayList<loop>> loops = logic.getLoops();
 			for(int i = 0; i < loops.size(); i++){
 				ArrayList<loop> row = loops.get(i);
@@ -432,17 +435,23 @@ public class CrochetISAmain {
 			}
 			System.out.println("Row " + loops.size() + ": " + logic.getCurrRow());
 			System.out.println("Hook: " + logic.getHook());
-			// if(done){
-			// 	System.out.println();
-			// 	System.out.println("Exiting...");
-			// 	break;
-			// }
-			if(!done)
-				System.out.println("To process next action press 'n' ");
-			if(actionIndex > 0)
-				System.out.println("To go back one action press 'b' ");
-			System.out.println("To exit type 'exit' ");
-			String nextLine = inputScan.nextLine();
+			if(logic.constructingTop())
+				System.out.println("Constructing Top");
+			else
+				System.out.println("Constructing Post");
+			if(actionIndex >= actions.size()){
+				if(done)
+					System.out.println("Done.");
+				else{
+					System.out.println("Processing Final Action");
+					done = true;
+				}
+			}
+			else {
+				currAction = actions.get(actionIndex);
+				System.out.println("Next Action: " + currAction);
+			}
+			String nextLine = inputScan.next();
 
 			if(nextLine.equals("N") || nextLine.equals("n")){
 				if(done)
@@ -455,6 +464,11 @@ public class CrochetISAmain {
 					logic.undoLastAction();
 				else
 					System.out.println("Unable to undo initialization.");
+			}
+			else if(nextLine.equals("h") || nextLine.equals("H")){
+				System.out.println("To process next action press 'n' ");
+				System.out.println("To go back one action press 'b' ");
+				System.out.println("To exit type 'exit' ");
 			}
 			if(nextLine.equals("exit"))
 				break;
