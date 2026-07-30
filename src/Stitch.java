@@ -9,6 +9,7 @@ public class Stitch {
 	int attachPoint;
 	ArrayList<twoItems> connectedTo;
 	String type;
+	int postHeight;
 
 	// public Stitch(int row, int index, int attached, Stitch[] insert, String type) {
 	// 	this.row = row;
@@ -24,6 +25,7 @@ public class Stitch {
 		this.type = type;
 		this.attachPoint = -1;
 		this.connectedTo = new ArrayList<twoItems>();
+		postHeight = 0;
 	}
 
 	public void setAttachPoint(int attachPoint) {
@@ -46,8 +48,16 @@ public class Stitch {
 		return index;
 	}
 
+	public void setHeight(int height){
+		postHeight = height;
+	}
+
+	public int getHeight(){
+		return postHeight;
+	}
+
 
 	public String toString(){
-		return "type: " + type + ", row: " + row + ", index: " + index + ", attachPoint: " + attachPoint + ", connectedTo: " + connectedTo;
+		return "type: " + type + ", row: " + row + ", index: " + index + ", attachPoint: " + attachPoint + ", connectedTo: " + connectedTo + "postHeight: " + postHeight;
 	}
 }
