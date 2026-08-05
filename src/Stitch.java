@@ -8,16 +8,10 @@ public class Stitch {
 	int index;
 	int attachPoint;
 	ArrayList<twoItems> connectedTo;
+	ArrayList<String> actions;
 	String type;
 	int postHeight;
-
-	// public Stitch(int row, int index, int attached, Stitch[] insert, String type) {
-	// 	this.row = row;
-	// 	this.index = index;
-	// 	this.attachPoint = attached;
-	// 	this.connectedTo = new ArrayList<twoItems>(Arrays.asList(insert));
-	// 	this.type = type;
-	// }
+	boolean between;
 
 	public Stitch(int row, int index, String type){
 		this.row = row;
@@ -26,6 +20,8 @@ public class Stitch {
 		this.attachPoint = -1;
 		this.connectedTo = new ArrayList<twoItems>();
 		postHeight = 0;
+		between = false;
+		actions = new ArrayList<String>();
 	}
 
 	public void setAttachPoint(int attachPoint) {
@@ -34,6 +30,10 @@ public class Stitch {
 
 	public void addConnection(twoItems connection) {
 		connectedTo.add(connection);
+	}
+
+	public ArrayList<twoItems> getConnections(){
+		return connectedTo;
 	}
 
 	public void setIndex(int index) {
@@ -56,8 +56,19 @@ public class Stitch {
 		return postHeight;
 	}
 
+	public void setBetween(boolean b){
+		between = b;
+	}
+
+	public void setActions(ArrayList<String> newActions){
+		actions = newActions;
+	}
+
+	public ArrayList<String> getActions(){
+		return actions;
+	}
 
 	public String toString(){
-		return "type: " + type + ", row: " + row + ", index: " + index + ", attachPoint: " + attachPoint + ", connectedTo: " + connectedTo + "postHeight: " + postHeight;
+		return "type: " + type + ", row: " + row + ", index: " + index + ", attachPoint: " + attachPoint + ", connectedTo: " + connectedTo + ", postHeight: " + postHeight+ ", Between Space Available? "+ between;
 	}
 }
