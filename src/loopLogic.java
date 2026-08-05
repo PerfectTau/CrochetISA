@@ -11,8 +11,10 @@ public class loopLogic {
     int loopCount;
     int stitchCount;
     int row;
+    int betweenCounter;
     boolean insertedLast;
     boolean constructingTop;
+    boolean between;
 
     public loopLogic(ArrayList<String> actions){
         this.actions = actions;
@@ -24,8 +26,10 @@ public class loopLogic {
         stitchCount = 0;
         loopCount = 0;
         row = 0;
+        betweenCounter = 2;
         insertedLast = false;
         constructingTop = true;
+        between = false;
     }
 
     public int getActionIndex(){
@@ -82,13 +86,43 @@ public class loopLogic {
             }
             hookLoops.push(lastLoop);
             insertedLast = false;
+
+            //check if you finished a between space
+            if(between && hookLoops.size() == betweenCounter){
+                System.out.println("Between Attach Point Completed");
+                between = false;
+            }
         }
         else if(action.equals("insert top") || action.equals("insert front loop") || action.equals("insert back loop")){                                                                                                                                                                                                                                                          
             // add previous row's correct loop to hookLoops list
             //begins work on post
             constructingTop = false;
+            
             ArrayList<loop> previousRow = loops.get(nextConnection.getRow());
             int connectionIndex = nextConnection.getIndex();
+
+            //check if this stitch should create a between attach point
+            if(actionIndex > 0){
+                if(actions.get(actionIndex - 1).equals("yo")){
+                    between = true;
+                    int tempIndex = actionIndex - 1;
+                    String tempAction = actions.get(tempIndex);
+                    int tempLoopCount = hookLoops.size();
+                    while(tempAction.equals("yo")){
+                        tempIndex--;
+                        tempAction = actions.get(tempIndex);
+                        tempLoopCount--;
+                    }
+                    if(tempLoopCount > 1)
+                        betweenCounter++;
+                    else
+                        betweenCounter = 2;
+                }
+                else{
+                    between = false;
+                    betweenCounter = 2;
+                }
+            }
 
             for(int i = connectionIndex; i >= 0; i--){
                 loop l = previousRow.get(i);
