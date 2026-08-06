@@ -343,6 +343,27 @@ public class CrochetISAmain {
 					actions = stitchMap.get(stitch);
 					currentStitch.setActions(actions);
 					height = findStitchHeight(currentStitch, actions);
+					currentStitch.setHeight(height);
+					//check if first non-chain stitch in row
+					boolean firstNonChain = true;
+					int chCount = 0;
+					for(Stitch rowStitch : currRow){
+						if(!rowStitch.getType().equals("ch"))
+							firstNonChain = false;
+						else
+							chCount++;
+					}
+					if(firstNonChain && !stitch.equals("ch") && !stitch.equals(TURN) && !stitch.equals(SK)){
+						if(chCount < height){
+							scanner.close();
+							throw new IllegalArgumentException("Must have a turning chain of at least " + height + " on row " + z);
+						}
+						else if(chCount > height + 1){
+							scanner.close();
+							throw new IllegalArgumentException("Turning chain is greater than stitch height on row " + z + ". Did you mean to add a turn?");
+						}
+					}
+
 					//System.out.println("Stitch: " + currentStitch + "Height: "+ height);
 					for (String action : actions) {
 						if (action.equals("decrease")) {
