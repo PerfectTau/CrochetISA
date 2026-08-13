@@ -180,30 +180,34 @@ public class CrochetISAmain {
 				connectionIndex = nextConnection.getIndex();
 			}
 			boolean endOfRow = false;
+			boolean firstStitchCH = true;
 			String firstStitch = row.get(0);
 			Pattern incDecPattern = Pattern.compile("^(.*)(\\d+)(tog|inc)$");
 			Matcher firstStitchMatcher = incDecPattern.matcher(firstStitch);
-			if(firstStitchMatcher.matches()){
+			if (firstStitchMatcher.matches()) {
 				firstStitch = firstStitchMatcher.group(1);
 			}
 			ArrayList<String> firstStitchActions = new ArrayList<String>();
 			if (stitchMap.containsKey(firstStitch))
 				firstStitchActions = stitchMap.get(firstStitch);
 			int height = findStitchHeight(new Stitch(0, 0, firstStitch), firstStitchActions);
-			//System.out.println("Stitch: " + firstStitch + " Height: " + height);
+			// System.out.println("Stitch: " + firstStitch + " Height: " + height);
 			if (!firstStitch.equals("ch")) {
+				firstStitchCH = false;
 				for (int t = 1; t <= height; t++) {
 					int insertStitchIndex = prevRow.size() - t;
-					if(insertStitchIndex < 0){
+					if (insertStitchIndex < 0) {
 						scanner.close();
-						throw new IllegalArgumentException("Must have a turning chain of at least " + height + " stitches");
+						throw new IllegalArgumentException(
+								"Must have a turning chain of at least " + height + " stitches");
 					}
 					Stitch prevStitch = prevRow.get(insertStitchIndex);
 					output.append(SK + ", ");
 					actionsList.add(SK);
 					if (!prevStitch.getType().equals("ch")) {
 						scanner.close();
-						throw new IllegalArgumentException("Must have a turning chain of at least " + height + " stitches");
+						throw new IllegalArgumentException(
+								"Must have a turning chain of at least " + height + " stitches");
 					}
 				}
 				connectionIndex = prevRow.size() - height - 1;
@@ -233,7 +237,7 @@ public class CrochetISAmain {
 				currentStitch.setAttachPoint(attach);
 
 				// check increase/decrease
-				
+
 				Matcher matcher = incDecPattern.matcher(stitch);
 				ArrayList<String> actions = new ArrayList<String>();
 				if (matcher.matches()) {
@@ -241,21 +245,20 @@ public class CrochetISAmain {
 					int count = Integer.parseInt(matcher.group(2));
 					String operation = matcher.group(3);
 					System.out.println("Increase/Decrease: " + count + " " + stitchType + " " + operation);
-					if (stitchMap.containsKey(stitchType)){
+					if (stitchMap.containsKey(stitchType)) {
 						actions = stitchMap.get(stitchType);
 						currentStitch.setActions(actions);
 						height = findStitchHeight(currentStitch, actions);
-						//System.out.println("Stitch: " + currentStitch + " Height: " + height);
+						// System.out.println("Stitch: " + currentStitch + " Height: " + height);
 						currentStitch.setHeight(height);
-					}
-					else {
+					} else {
 						scanner.close();
 						throw new IllegalArgumentException("Unrecognized stitch: " + stitch);
 					}
 
 					// Increase
 					if (operation.equals("inc")) {
-						//actions = stitchMap.get(stitchType);
+						// actions = stitchMap.get(stitchType);
 						for (int i = 0; i < count; i++) {
 							for (String action : actions) {
 								if (action.equals(YO) || action.equals(INSERT)) {
@@ -344,27 +347,30 @@ public class CrochetISAmain {
 					currentStitch.setActions(actions);
 					height = findStitchHeight(currentStitch, actions);
 					currentStitch.setHeight(height);
-					//check if first non-chain stitch in row
-					boolean firstNonChain = true;
-					int chCount = 0;
-					for(Stitch rowStitch : currRow){
-						if(!rowStitch.getType().equals("ch"))
-							firstNonChain = false;
-						else
-							chCount++;
-					}
-					if(firstNonChain && !stitch.equals("ch") && !stitch.equals(TURN) && !stitch.equals(SK)){
-						if(chCount < height){
-							scanner.close();
-							throw new IllegalArgumentException("Must have a turning chain of at least " + height + " on row " + z);
+					// check if first non-chain stitch in row
+					if (firstStitchCH) {
+						boolean firstNonChain = true;
+						int chCount = 0;
+						for (Stitch rowStitch : currRow) {
+							if (!rowStitch.getType().equals("ch"))
+								firstNonChain = false;
+							else
+								chCount++;
 						}
-						else if(chCount > height + 1){
-							scanner.close();
-							throw new IllegalArgumentException("Turning chain is greater than stitch height on row " + z + ". Did you mean to add a turn?");
+						if (firstNonChain && !stitch.equals("ch") && !stitch.equals(TURN) && !stitch.equals(SK)) {
+							if (chCount < height) {
+								scanner.close();
+								throw new IllegalArgumentException(
+										"Must have a turning chain of at least " + height + " on row " + z);
+							} else if (chCount > height + 1) {
+								scanner.close();
+								throw new IllegalArgumentException("Turning chain is greater than stitch height on row "
+										+ z + ". Did you mean to add a turn?");
+							}
 						}
 					}
 
-					//System.out.println("Stitch: " + currentStitch + "Height: "+ height);
+					// System.out.println("Stitch: " + currentStitch + "Height: "+ height);
 					for (String action : actions) {
 						if (action.equals("decrease")) {
 							continue;
@@ -421,11 +427,14 @@ public class CrochetISAmain {
 				}
 				if (s < row.size() - 1) {
 					String nextStitch = row.get(s + 1);
-					if (connectionIndex - 1 < 0
-							&& !(nextStitch.equals("ch") || nextStitch.equals(TURN) || nextStitch.equals(SK))) {
-						System.out.println("Current Stitch: " + stitch + ", Next Stitch: " + nextStitch);
-						scanner.close();
-						throw new IllegalArgumentException("Row " + z + " is too long. You may be missing increases.");
+					if (!(connectionIndex == 0 && stitch.equals("ch"))) {
+						if (connectionIndex - 1 < 0
+								&& !(nextStitch.equals("ch") || nextStitch.equals(TURN) || nextStitch.equals(SK))) {
+							System.out.println("Current Stitch: " + stitch + ", Next Stitch: " + nextStitch);
+							scanner.close();
+							throw new IllegalArgumentException(
+									"Row " + z + " is too long. You may be missing increases.");
+						}
 					}
 					if (!stitch.equals("ch") && !endOfRow
 							&& !(row.get(s + 1).equals(TURN) || row.get(s + 1).equals("ch"))) {
@@ -457,7 +466,7 @@ public class CrochetISAmain {
 	/**
 	 * Handles Console Loop Level visualization program
 	 * 
-	 * @param actions the list of actions for the pattern to be stepped through
+	 * @param actions   the list of actions for the pattern to be stepped through
 	 * @param inputScan a scanner connected to System.in for accepting user commands
 	 */
 	private static void stepThroughPattern(ArrayList<String> actions, Scanner inputScan) {
@@ -473,9 +482,9 @@ public class CrochetISAmain {
 			int actionIndex = logic.getActionIndex();
 			String currAction = "";
 
-			ArrayList<ArrayList<loop>> loops = logic.getLoops();
+			ArrayList<ArrayList<Loop>> loops = logic.getLoops();
 			for (int i = 0; i < loops.size(); i++) {
-				ArrayList<loop> row = loops.get(i);
+				ArrayList<Loop> row = loops.get(i);
 				System.out.println("Row " + i + ": " + row.toString());
 			}
 			System.out.println("Row " + loops.size() + ": " + logic.getCurrRow());
@@ -520,7 +529,7 @@ public class CrochetISAmain {
 	/**
 	 * Finds the height of the given stitch
 	 * 
-	 * @param stitch the stitch to be assigned a height
+	 * @param stitch        the stitch to be assigned a height
 	 * @param stitchActions the actions associated with the given stitch
 	 * @return the post height of the given stitch
 	 */
@@ -531,10 +540,10 @@ public class CrochetISAmain {
 		ArrayList<String> actionCopy = new ArrayList<String>(stitchActions);
 		String[] insertSubList = { INSERT, YO, PT };
 		String[] subList = { YO, PT, PT };
-		if(stitchActions.size() == 0){
+		if (stitchActions.size() == 0) {
 			throw new IllegalArgumentException("Stitch " + stitch.getType() + " has no actions associated with it.");
 		}
-		if(stitchActions.get(0).equals(YO) && !stitch.getType().equals("ch"))
+		if (stitchActions.get(0).equals(YO) && !stitch.getType().equals("ch"))
 			stitch.setBetween(true);
 		int index = Collections.indexOfSubList(actionCopy, Arrays.asList(insertSubList));
 		if (index != -1) {
@@ -542,7 +551,7 @@ public class CrochetISAmain {
 			currHeight++;
 			for (int i = 0; i < 3; i++) {
 				actionCopy.remove(index);
-				//insert++;
+				// insert++;
 			}
 		}
 
@@ -552,12 +561,12 @@ public class CrochetISAmain {
 			currHeight++;
 			for (int i = 0; i < 3; i++) {
 				actionCopy.remove(index);
-				//index++;
+				// index++;
 			}
 			index = Collections.indexOfSubList(actionCopy, Arrays.asList(subList));
 			counter++;
 		}
-		if(counter > 1)
+		if (counter > 1)
 			stitch.setBetween(true);
 		currHeight--;
 		stitch.setHeight(currHeight);

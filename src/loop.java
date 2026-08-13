@@ -1,27 +1,27 @@
 import java.util.ArrayList;
 
-public class loop {
+public class Loop implements HookElement {
     private int id;
     private int stitchId;
-    private ArrayList<Integer> attachedTo;
+    private ArrayList<HookElement> attachedTo;
     private boolean top;
 
-    public loop(int id, int stitchId){
+    public Loop(int id, int stitchId){
         this.id = id;
         this.stitchId = stitchId;
-        attachedTo = new ArrayList<Integer>();
+        attachedTo = new ArrayList<HookElement>();
         top = false;
     }
 
-    public void addConnection(Integer i){
-        attachedTo.add(i);
+    public void addConnection(HookElement element){
+        attachedTo.add(element);
     }
 
-    public boolean removeConnection(Integer i){
-        return attachedTo.remove(i);
+    public boolean removeConnection(HookElement element){
+        return attachedTo.remove(element);
     }
 
-    public ArrayList<Integer> getConnections(){
+    public ArrayList<HookElement> getConnections(){
         return attachedTo;
     }
 
@@ -37,7 +37,7 @@ public class loop {
         return id;
     }
 
-    public int getStitch(){
+    public int getStitchID(){
         return stitchId;
     }
     
@@ -46,13 +46,13 @@ public class loop {
 	}
 
     public String toString(){
-        return "[Loop: " + id + ", Stitch: " + stitchId + ", Connected To: " + attachedTo + "]";
+        return "[Loop: " + id + ", Stitch: " + stitchId +"]";
     }
 
     @Override
     public boolean equals(Object o){
-        if(o instanceof loop){
-            loop l = (loop) o;
+        if(o instanceof Loop){
+            Loop l = (Loop) o;
             return this.id == l.id;
         }
         return false;
