@@ -182,7 +182,7 @@ public class CrochetISAmain {
 			boolean endOfRow = false;
 			boolean firstStitchCH = true;
 			String firstStitch = row.get(0);
-			Pattern incDecPattern = Pattern.compile("^(.*)(\\d+)(tog|inc)$");
+			Pattern incDecPattern = Pattern.compile("^(.*)(\\d+)(tog|inc|bobble|puff)$");
 			Matcher firstStitchMatcher = incDecPattern.matcher(firstStitch);
 			if (firstStitchMatcher.matches()) {
 				firstStitch = firstStitchMatcher.group(1);
@@ -295,7 +295,7 @@ public class CrochetISAmain {
 						index--;
 						output.append(MOVE + ", ");
 						actionsList.add(MOVE);
-					} else {
+					} else if(operation.equals("tog")) {
 						// Decrease
 						currentStitch.addConnection(nextConnectionItem);
 						// separate action stems for decreasing
@@ -339,6 +339,50 @@ public class CrochetISAmain {
 						}
 						currRow.add(currentStitch);
 
+					}
+					else if(operation.equals("bobble") || operation.equals("puff")) {
+						if(!actions.get(0).equals(YO)){
+							scanner.close();
+							throw new IllegalArgumentException("Bobble/Puff stitches must have a post (HDC, DC, TR, DTR). Invalid stitch: " + stitchType);
+						}
+						// Bobble/Puff
+						currentStitch.addConnection(nextConnectionItem);
+						// separate action stems for bobble/puff
+						int actionIndex = actions.indexOf("decrease");
+						for (int i = 0; i < count; i++) {
+							// bobble/puff stems
+							for (int j = 0; j < actionIndex; j++) {
+								String action = actions.get(j);
+								if (action.equals(YO) || action.equals(INSERT)) {
+									currentLoops++;
+								}
+								if (action.equals(PT)) {
+									currentLoops--;
+								}
+								if (action.equals(INSERT)) {
+									output.append(attachPoint + ", ");
+									actionsList.add(attachPoint);
+									continue;
+								}
+								output.append(action + ", ");
+								actionsList.add(action);
+							}
+							if (i < count - 1) {
+								connectionIndex--;
+								nextConnection = prevRow.get(connectionIndex);
+								nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
+								//currentStitch.addConnection(nextConnectionItem);
+							}
+						}
+
+						// Finish bobble/puff (YO, PT_ALL)
+						output.append(YO + ", ");
+						actionsList.add(YO);
+						for (int k = 0; k < currentLoops + 1; k++) {
+							output.append(PT + ", ");
+							actionsList.add(PT);
+						}
+						currRow.add(currentStitch);
 					}
 				}
 				// Standard (non-increase/decrease) Stitch processing

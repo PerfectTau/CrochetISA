@@ -350,24 +350,24 @@ public class loopLogic {
         }
     }
 
-    /**
-     * Gets the last loop that the pattern inserted into using its ID
-     * 
-     * @param lastID the ID of the loop to find
-     * @return the loop that was last inserted into
-     */
-    private Loop getLastInsertedLoop(int lastID) {
-        ArrayList<Loop> lastRow = loops.get(loops.size() - 1);
-        for (int i = lastRow.size() - 1; i >= 0; i--) {
-            Loop currLoop = lastRow.get(i);
-            if (currLoop.getID() == lastID) {
-                insertedLast = true;
-                return currLoop;
-            }
-        }
-        insertedLast = true;
-        return null;
-    }
+    // /**
+    //  * Gets the last loop that the pattern inserted into using its ID
+    //  * 
+    //  * @param lastID the ID of the loop to find
+    //  * @return the loop that was last inserted into
+    //  */
+    // private Loop getLastInsertedLoop(int lastID) {
+    //     ArrayList<Loop> lastRow = loops.get(loops.size() - 1);
+    //     for (int i = lastRow.size() - 1; i >= 0; i--) {
+    //         Loop currLoop = lastRow.get(i);
+    //         if (currLoop.getID() == lastID) {
+    //             insertedLast = true;
+    //             return currLoop;
+    //         }
+    //     }
+    //     insertedLast = true;
+    //     return null;
+    // }
 
     /**
      * Checks if previous action was a yarn over to see if a between attach point
