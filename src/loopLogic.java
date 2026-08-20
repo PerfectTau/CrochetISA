@@ -5,8 +5,10 @@ public class loopLogic {
     ArrayList<String> actions;
     ArrayList<ArrayList<Loop>> loops;
     ArrayList<Post> posts;
+    ArrayList<BetweenSpace> betweenSpaces;
     ArrayList<Loop> currRow;
     Post currPost;
+    BetweenSpace currBetween;
     Stack<HookElement> hookLoops;
     twoItems nextConnection;
     int actionIndex;
@@ -16,16 +18,18 @@ public class loopLogic {
     int betweenCounter;
     boolean insertedLast;
     boolean constructingTop;
-    boolean between;
+    boolean post;
 
     public loopLogic(ArrayList<String> actions) {
         this.actions = actions;
         loops = new ArrayList<ArrayList<Loop>>();
         posts = new ArrayList<Post>();
+        betweenSpaces = new ArrayList<BetweenSpace>();
         hookLoops = new Stack<HookElement>();
         hookLoops.add(new Loop(0, 0));
         currRow = new ArrayList<Loop>();
         currPost = new Post(0);
+        currBetween = new BetweenSpace(0);
         actionIndex = 0;
         stitchCount = 0;
         loopCount = 0;
@@ -33,7 +37,7 @@ public class loopLogic {
         betweenCounter = 2;
         insertedLast = false;
         constructingTop = true;
-        between = false;
+        post = false;
     }
 
     public int getActionIndex() {
@@ -97,14 +101,14 @@ public class loopLogic {
             HookElement lastLoop = hookLoops.pop();
             HookElement removedLoop = hookLoops.pop();
             if (hookLoops.size() == 0) {
-                // finishes post construction, back to working on top
+                // finish current stitch
                 if (removedLoop instanceof Loop)
                     ((Loop) removedLoop).toggleTop();
                 else
                     throw new IllegalArgumentException("Finishing hook element is not a loop.");
                 stitchCount++;
-                posts.add(currPost);
-                currPost = new Post(stitchCount);
+                if(currBetween.size() > 0)
+                    betweenSpaces.add(currBetween);
                 lastLoop.setStitchID(stitchCount);
                 constructingTop = true;
             }
@@ -124,9 +128,11 @@ public class loopLogic {
             insertedLast = false;
 
             // check if you finished a between space
-            if (between && hookLoops.size() == betweenCounter) {
+            if(post && hookLoops.size() == betweenCounter) {
                 System.out.println("Between Attach Point Completed");
-                between = false;
+                //currentBetween = new BetweenSpace(stitchCount);
+                //currentBetween.addLoop((Loop) removedLoop);
+                post = false;
             }
         } else if (action.equals("insert top") || action.equals("insert front loop") || action.equals("insert back loop")) {
             // add previous row's correct loop to hookLoops list
@@ -137,7 +143,15 @@ public class loopLogic {
             int connectionIndex = nextConnection.getIndex();
 
             // check if this stitch should create a post
-            setBetween();
+            setPost();
+            System.out.println("CurrPost: " + currPost + "; CurrPost Loops: " + currPost.getLoops());
+            if(currPost != null &&currPost.size() > 0)
+                posts.add(currPost);
+            if(post)
+                currPost = new Post(stitchCount);
+
+            //Check if a between space is created and add loops to be included
+            setBetweenSpace();
 
             for (int i = connectionIndex; i >= 0; i--) {
                 Loop l = previousRow.get(i);
@@ -150,6 +164,10 @@ public class loopLogic {
 
         } else if (action.equals("insert front post") || action.equals("insert back post")) {
             constructingTop = false;
+
+            //check if a between space is created
+            setBetweenSpace();
+
             // get next connection's stitch's post
             // find the next stitch (find next top)
             int connectionIndex = nextConnection.getIndex();
@@ -163,15 +181,28 @@ public class loopLogic {
             if (nextLoop == null)
                 throw new IllegalArgumentException("No stitches available in previous row (current row: " + row + ")");
             int nextStitchID = nextLoop.getStitchID();
-            Post nextPost = posts.get(nextStitchID);
-
+            Post nextPost = null;
             // check if this stitch should create a post/between attach point
-            setBetween();
+            setPost();
+            System.out.println("CurrPost: " + currPost + "; CurrPost Loops: " + currPost.getLoops());
+            if(currPost != null &&currPost.size() > 0)
+                posts.add(currPost);
+            if(post)
+                currPost = new Post(stitchCount);
+
+             // find the first post in the list from the stitch to connect to
+            for (Post post : posts){
+                if(post.getStitchID() == nextStitchID){
+                    nextPost = post;
+                    break;
+                }
+            }
 
             if (nextPost.size() > 0) {
                 hookLoops.push(nextPost);
             } else
                 throw new IllegalArgumentException("Cannot insert around post: Post does not exist");
+
             insertedLast = true;
             // posts.add(currPost);
             // currPost = new Post(stitchCount);
@@ -215,9 +246,9 @@ public class loopLogic {
         } else if (lastAction.equals("pt")) { // pull through: remove second to last element from hook and add it to loops list
             // add back the second to last hookElement to hookLoop list, removing it from loops if applicable
             // check if you finished a between space
-            if (!between && hookLoops.size() == betweenCounter - 1) {
+            if (!post && hookLoops.size() == betweenCounter - 1) {
                 // System.out.println("Between Attach Point Completed");
-                between = true;
+                post = true;
             }
 
             HookElement lastElement = hookLoops.pop();
@@ -322,8 +353,8 @@ public class loopLogic {
                     break;
                 }
             }
-            if (between)
-                between = false;
+            if (post)
+                post = false;
             insertedLast = false;
         } else if (lastAction.equals("move")) { // increments next connection
             ArrayList<Loop> previousRow = loops.get(loops.size() - 1);
@@ -343,6 +374,9 @@ public class loopLogic {
             loops.remove(loops.size() - 1);
             row--;
             nextConnection = new twoItems(row, 0);
+            //add last post to posts list if it has loops
+            if(currPost != null && currPost.size() > 0)
+                posts.add(currPost);
         } else if (lastAction.equals("skip")) {
             int currIndex = nextConnection.getIndex();
             nextConnection.setIndex(currIndex + 1);
@@ -369,14 +403,61 @@ public class loopLogic {
     //     return null;
     // }
 
+    private void setBetweenSpace(){
+        currBetween = new BetweenSpace(stitchCount);
+        if(post){
+                // all stitches with a post have a between space
+                if(hookLoops.size() == 2){
+                    // all loops in hookLoops are part of the between space
+                    for(HookElement element : hookLoops){
+                        if(element instanceof Loop){
+                            currBetween.addLoop((Loop) element);
+                        }
+                    }
+                }
+                else{
+                    // only the last two loops in hookLoops are part of the between space
+                    ArrayList<Loop> hookLoopsList = new ArrayList<Loop>();
+                    while(!hookLoops.isEmpty()){
+                        HookElement element = hookLoops.pop();
+                        if(element instanceof Loop){
+                            hookLoopsList.add((Loop) element);
+                        }
+                    }
+                    currBetween.addLoop(hookLoopsList.get(hookLoopsList.size() - 1));
+                    currBetween.addLoop(hookLoopsList.get(hookLoopsList.size() - 2));
+                    // push the loops back onto the stack in reverse order
+                    for(int i = hookLoopsList.size() - 1; i >= 0; i--){
+                        hookLoops.push(hookLoopsList.get(i));
+                    }
+                }
+            }
+
+            //check for chains
+            int index = currRow.size() - 1;
+            Loop nextLoop = currRow.get(index);
+            while(nextLoop.isTop()){
+                //add nextLoop
+                currBetween.addLoop(nextLoop);
+                index--;
+                if(index < 0)
+                    break;
+                nextLoop = currRow.get(index);
+            }
+            //last loop added is the top of the previous stitch, so remove it from between space
+            currBetween.removeLoop(nextLoop);
+
+            //check previous stitch's height
+    }
+
     /**
      * Checks if previous action was a yarn over to see if a between attach point
      * should be created for the current stitch
      */
-    private void setBetween() {
+    private void setPost() {
         if (actionIndex > 0) {
             if (actions.get(actionIndex - 1).equals("yo")) {
-                between = true;
+                post = true;
                 int tempIndex = actionIndex - 1;
                 String tempAction = actions.get(tempIndex);
                 int tempLoopCount = hookLoops.size();
@@ -390,7 +471,7 @@ public class loopLogic {
                 else
                     betweenCounter = 2;
             } else {
-                between = false;
+                post = false;
                 betweenCounter = 2;
             }
         }
