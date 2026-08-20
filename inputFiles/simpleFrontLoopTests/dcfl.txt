@@ -1,0 +1,3 @@
+ch, ch, turn
+ch, ch, dc, dc, turn
+ch, ch, dcfl, dcfl

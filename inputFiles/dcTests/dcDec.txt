@@ -1,0 +1,3 @@
+5ch, turn
+dc2tog, dc, 2ch, turn
+dc2tog

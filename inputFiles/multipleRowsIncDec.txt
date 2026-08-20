@@ -1,0 +1,3 @@
+3ch, turn
+ch, sc2inc, 2sc, turn
+2ch, dc3tog, sc

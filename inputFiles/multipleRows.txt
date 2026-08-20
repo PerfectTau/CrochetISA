@@ -1,0 +1,4 @@
+3ch, turn
+ch, 3sc, turn
+2ch, 3dc, turn
+ch, 3hdc

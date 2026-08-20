@@ -1,0 +1,2 @@
+3ch, turn
+ch, hdc2tog, hdc
