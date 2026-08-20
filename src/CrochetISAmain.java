@@ -338,6 +338,9 @@ public class CrochetISAmain {
 							actionsList.add(PT);
 						}
 						currRow.add(currentStitch);
+						currentLoops = 0;
+						output.append(MOVE + ", ");
+						actionsList.add(MOVE);
 
 					}
 					else if(operation.equals("bobble") || operation.equals("puff")) {
@@ -367,7 +370,7 @@ public class CrochetISAmain {
 								output.append(action + ", ");
 								actionsList.add(action);
 							}
-							if (i < count - 1) {
+							if (i < count - 1 && connectionIndex > 0) {
 								connectionIndex--;
 								nextConnection = prevRow.get(connectionIndex);
 								nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
@@ -383,6 +386,8 @@ public class CrochetISAmain {
 							actionsList.add(PT);
 						}
 						currRow.add(currentStitch);
+						output.append(MOVE + ", ");
+						actionsList.add(MOVE);
 					}
 				}
 				// Standard (non-increase/decrease) Stitch processing
@@ -580,7 +585,7 @@ public class CrochetISAmain {
 	private static int findStitchHeight(Stitch stitch, ArrayList<String> stitchActions) {
 		// get height from repeated yo, pt, pt
 		// ins, yo, pt = height 1
-		int currHeight = stitch.getHeight();
+		int currHeight = 0;
 		ArrayList<String> actionCopy = new ArrayList<String>(stitchActions);
 		String[] insertSubList = { INSERT, YO, PT };
 		String[] subList = { YO, PT, PT };
