@@ -35,7 +35,7 @@ public class Post implements HookElement{
     }
 
     public String toString(){
-        return "Post: " + stitchID;
+        return "[Post: " + stitchID + "]";
     }
 
     public boolean equals(Object o){
