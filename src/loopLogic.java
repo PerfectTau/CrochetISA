@@ -8,6 +8,7 @@ public class loopLogic {
     ArrayList<BetweenSpace> betweenSpaces;
     ArrayList<Loop> currRow;
     Post currPost;
+    Loop nextTop;
     BetweenSpace currBetween;
     Stack<HookElement> hookLoops;
     twoItems nextConnection;
@@ -30,6 +31,7 @@ public class loopLogic {
         currRow = new ArrayList<Loop>();
         currPost = new Post(0);
         currBetween = new BetweenSpace(0);
+        nextTop = new Loop(0, 0);
         actionIndex = 0;
         stitchCount = 0;
         loopCount = 0;
@@ -102,8 +104,10 @@ public class loopLogic {
             HookElement removedLoop = hookLoops.pop();
             if (hookLoops.size() == 0) {
                 // finish current stitch
-                if (removedLoop instanceof Loop)
+                if (removedLoop instanceof Loop){
                     ((Loop) removedLoop).toggleTop();
+                    nextTop = (Loop) removedLoop;
+                }
                 else
                     throw new IllegalArgumentException("Finishing hook element is not a loop.");
                 stitchCount++;
@@ -407,30 +411,32 @@ public class loopLogic {
         currBetween = new BetweenSpace(stitchCount);
         if(post){
                 // all stitches with a post have a between space
-                if(hookLoops.size() == 2){
-                    // all loops in hookLoops are part of the between space
-                    for(HookElement element : hookLoops){
-                        if(element instanceof Loop){
-                            currBetween.addLoop((Loop) element);
-                        }
-                    }
-                }
-                else{
-                    // only the last two loops in hookLoops are part of the between space
-                    ArrayList<Loop> hookLoopsList = new ArrayList<Loop>();
-                    while(!hookLoops.isEmpty()){
-                        HookElement element = hookLoops.pop();
-                        if(element instanceof Loop){
-                            hookLoopsList.add((Loop) element);
-                        }
-                    }
-                    currBetween.addLoop(hookLoopsList.get(hookLoopsList.size() - 1));
-                    currBetween.addLoop(hookLoopsList.get(hookLoopsList.size() - 2));
-                    // push the loops back onto the stack in reverse order
-                    for(int i = hookLoopsList.size() - 1; i >= 0; i--){
-                        hookLoops.push(hookLoopsList.get(i));
-                    }
-                }
+                // get top
+                // add top and top + 1
+                // if(hookLoops.size() == 2){
+                //     // all loops in hookLoops are part of the between space
+                //     for(HookElement element : hookLoops){
+                //         if(element instanceof Loop){
+                //             currBetween.addLoop((Loop) element);
+                //         }
+                //     }
+                // }
+                // else{
+                //     // only the last two loops in hookLoops are part of the between space
+                //     ArrayList<Loop> hookLoopsList = new ArrayList<Loop>();
+                //     while(!hookLoops.isEmpty()){
+                //         HookElement element = hookLoops.pop();
+                //         if(element instanceof Loop){
+                //             hookLoopsList.add((Loop) element);
+                //         }
+                //     }
+                //     currBetween.addLoop(hookLoopsList.get(hookLoopsList.size() - 1));
+                //     currBetween.addLoop(hookLoopsList.get(hookLoopsList.size() - 2));
+                //     // push the loops back onto the stack in reverse order
+                //     for(int i = hookLoopsList.size() - 1; i >= 0; i--){
+                //         hookLoops.push(hookLoopsList.get(i));
+                //     }
+                // }
             }
 
             //check for chains
