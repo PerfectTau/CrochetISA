@@ -32,4 +32,8 @@ public class BetweenSpace implements HookElement{
     public ArrayList<Loop> getLoops(){
         return loops;
     }
+
+    public String toString(){
+        return "[Between Space: " + stitchID + "; Loops: " + loops + "]";
+    }
 }
