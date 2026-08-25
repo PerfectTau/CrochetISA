@@ -28,6 +28,10 @@ Actions:
 | dc | Double Crochet. Creates a tall stitch and a lighter fabric. | YO, INSERT, YO, PT, YO, PT, PT, YO, PT, PT |
 | tr | Treble Crochet. Requires a turning chain of 3 | YO, YO, INSERT, YO, PT, YO, PT, PT, YO, PT, PT, YO, PT, PT |
 | dtr | Double Treble Crochet. Requires a turning chain of 4 | YO, YO, YO, INSERT, YO, PT, YO, PT, PT, YO, PT, PT, YO, PT, PT, YO, PT, PT |
+|...Ninc (e.g. 2scinc, 4hdcflinc) | Increase stitch | Creates N stitches in one previous stitch |
+| ...Ntog (e.g. 3scbltog, 2dctog) | Decrease stitch | Creates one top attach point for N stitches on the previous row |
+|...Nbobble (e.g. dc3bobble, tr5bobble) | Bobble stitch. Can't be used with chain, slip, or single crochet stitches. | Equivalent of doing multiple decreases in a single stitch |
+|...Npuff (e.g. hdc4puff, dc2puff) | Puff stitch. Can't be used with chain, slip, or single crochet stitches | Equivalent of a bobble stitch |
 | ...fl (e.g. scfl, trfl) | Front Loop Insertion point. | Inserts into the front top loop |
 | ...bl (e.g. hdcbl, ssbl) | Back Loop Insertion point | Inserts into the back top loop |
 | fp... (e.g. fpdc, fpdtr) | Front Post Insertion point | Inserts from the front of the fabric around the post of the stitch to be attached to |
@@ -38,4 +42,7 @@ Actions:
 
 #### Multiples
 A number (x) followed by a stitch name is treated as x stitches. This means that '3sc' is treated the same as 'sc, sc, sc'
+
+#### Block Repeats
+A number (x) followed by a set of stitches in straight brackets ([]) repeats the stitches x times. For example, 2[ch, sk, sc] is parsed as 'ch, sk, sc, ch, sk, sc'
 
