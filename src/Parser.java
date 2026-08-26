@@ -75,7 +75,12 @@ public class Parser {
                                     token = tokens.get(j);
                                 }
                                 // add last token minus ']'
-                                stitches.add(token.substring(0, token.length() - 1));
+                                String lastStitch = token.substring(0, token.length()-1);
+                                int prevSize = stitches.size();
+                                index = checkMultiple(lastStitch, stitches, stitches.size());
+                                if(stitches.size() == prevSize)
+                                    stitches.add(lastStitch);
+                                //stitches.add(token.substring(0, token.length() - 1));
                                 tokens.remove(token);
                             }
                         } else{
