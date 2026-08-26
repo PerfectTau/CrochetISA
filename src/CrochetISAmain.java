@@ -17,7 +17,7 @@ public class CrochetISAmain {
 	final static String BACK_LOOP = "insert back loop";
 	final static String FRONT_POST = "insert front post";
 	final static String BACK_POST = "insert back post";
-	final static String BETWEEN = "insert between";
+	final static String BETWEEN = "insert into between/chain space";
 
 	// stitch types
 	final static String INSERT = "insert";
@@ -72,26 +72,32 @@ public class CrochetISAmain {
 		stitchMap.put("scbl", SC);
 		stitchMap.put("fpsc", SC);
 		stitchMap.put("bpsc", SC);
+		stitchMap.put("spsc", SC);
 		stitchMap.put("hdcfl", HDC);
 		stitchMap.put("hdcbl", HDC);
 		stitchMap.put("fphdc", HDC);
 		stitchMap.put("bphdc", HDC);
+		stitchMap.put("sphdc", HDC);
 		stitchMap.put("dcfl", DC);
 		stitchMap.put("dcbl", DC);
 		stitchMap.put("fpdc", DC);
 		stitchMap.put("bpdc", DC);
+		stitchMap.put("spdc", DC);
 		stitchMap.put("ssfl", SS);
 		stitchMap.put("ssbl", SS);
 		stitchMap.put("fpss", SS);
 		stitchMap.put("bpss", SS);
+		stitchMap.put("spss", SS);
 		stitchMap.put("trfl", TR);
 		stitchMap.put("trbl", TR);
 		stitchMap.put("fptr", TR);
 		stitchMap.put("bptr", TR);
+		stitchMap.put("sptr", TR);
 		stitchMap.put("dtrfl", DTR);
 		stitchMap.put("dtrbl", DTR);
 		stitchMap.put("fpdtr", DTR);
 		stitchMap.put("bpdtr", DTR);
+		stitchMap.put("spdtr", DTR);
 		stitchMap.put("sk", sk);
 
 		StringBuilder output = new StringBuilder();
@@ -230,6 +236,9 @@ public class CrochetISAmain {
 				} else if (Pattern.matches("^bp.*", stitch)) {
 					attachPoint = BACK_POST;
 					attach = back_post;
+				}else if (Pattern.matches("^sp.*", stitch)){
+					attachPoint = BETWEEN;
+					attach = between;
 				}
 
 				// Create stitch object with stitch type and attach point
