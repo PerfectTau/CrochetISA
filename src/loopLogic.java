@@ -410,33 +410,45 @@ public class loopLogic {
      * Finds next stitch top loop
      * @return the Top insertion point loop for the next stitch (excluding chains)
      */
+    // private Loop findNextTop(){
+    //     int connectionIndex = nextConnection.getIndex();
+    //     ArrayList<Loop> previousRow = loops.get(nextConnection.getRow());
+    //     Loop nextLoop = null;
+    //     for (int i = connectionIndex; i >= 0; i--) {
+    //         nextLoop = previousRow.get(i);
+    //         if (nextLoop.isTop()){
+    //             int nextIndex = i-1;
+    //             if(nextIndex < previousRow.size()-1 && nextIndex > 0){
+    //                 if(previousRow.get(i-1).isTop() && nextConnection.getRow() > 0)
+    //                     continue;   // if the next loop is also a top, then it is a chain
+    //                 else{
+    //                     connectionIndex = i;
+    //                     break;
+    //                 }
+    //             }
+    //             else{
+    //                 connectionIndex = i;
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     if (nextLoop == null)
+    //         throw new IllegalArgumentException("No stitches available in previous row (current row: " + row + ")");
+    //     System.out.println("Next Top: " + nextLoop);
+    //     nextConnection.setIndex(connectionIndex);
+    //     return nextLoop;
+    // }
+
     private Loop findNextTop(){
         int connectionIndex = nextConnection.getIndex();
         ArrayList<Loop> previousRow = loops.get(nextConnection.getRow());
-        Loop nextLoop = null;
-        for (int i = connectionIndex; i >= 0; i--) {
-            nextLoop = previousRow.get(i);
-            if (nextLoop.isTop()){
-                int nextIndex = i-1;
-                if(nextIndex < previousRow.size()-1 && nextIndex > 0){
-                    if(previousRow.get(i-1).isTop() && nextConnection.getRow() > 0)
-                        continue;   // if the next loop is also a top, then it is a chain
-                    else{
-                        connectionIndex = i;
-                        break;
-                    }
-                }
-                else{
-                    connectionIndex = i;
-                    break;
-                }
-            }
+        Loop prevLoop = null;
+        for(int i = connectionIndex; i >=0; i--){
+            prevLoop = previousRow.get(i);
+            if(prevLoop.isTop())
+                break;
         }
-        if (nextLoop == null)
-            throw new IllegalArgumentException("No stitches available in previous row (current row: " + row + ")");
-        System.out.println("Next Top: " + nextLoop);
-        nextConnection.setIndex(connectionIndex);
-        return nextLoop;
+        return prevLoop;
     }
 
     private void savePost(){
@@ -466,6 +478,15 @@ public class loopLogic {
                     }
                 }
             }
+            else{
+                //slip stitch and single crochet have yo, pt
+                //check if third next action is yo
+                if(actions.get(actionIndex + 3).equals("yo")) {   //single crochet
+                    //check previous stitch height
+                    //if(height >= 2)
+                    //add top and top+1 id to currBetween
+                }
+            }
 
             //check for chains
             int index = currRow.size() - 1;
@@ -481,7 +502,10 @@ public class loopLogic {
             //last loop added is the top of the previous stitch, so remove it from between space
             currBetween.removeLoop(currBetween.size()-1);
 
-            //check previous stitch's height
+            //if(curr stitch == single crochet)
+            //check previous height
+            //if height >= 2
+            //add to between space
     }
 
     /**
