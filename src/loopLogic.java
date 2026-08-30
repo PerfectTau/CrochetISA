@@ -106,13 +106,25 @@ public class loopLogic {
                 // finish current stitch
                 if (removedLoop instanceof Loop){
                     ((Loop) removedLoop).toggleTop();
+                    //check if all loops have been added to between space
+                    if(currBetween.size() > 0){
+                        int id = nextTop.getID() + 1;
+                        Loop curLoop = null;
+                        for(int i = currRow.size()-1; i >=0; i--){
+                            curLoop = currRow.get(i);
+                            if(curLoop.getID() == id)
+                                break;
+                        }
+                        if(!(curLoop == null)){
+                            if(curLoop.getID() == id && !currBetween.contains(curLoop))
+                                currBetween.addLoop(curLoop);
+                        }
+                    }
                     nextTop = (Loop) lastLoop;
                 }
                 else
                     throw new IllegalArgumentException("Finishing hook element is not a loop.");
                 stitchCount++;
-                // if(currBetween.size() > 0)
-                //     betweenSpaces.add(currBetween);
                 lastLoop.setStitchID(stitchCount);
                 constructingTop = true;
             }
@@ -122,7 +134,6 @@ public class loopLogic {
                     currPost.addLoop((Loop) removedLoop);
             }
             // if latest loop is not connected to removed loop, connect them
-            // int removedLoopID = removedLoop.getID();
             if (lastLoop instanceof Loop) {
                 if (((Loop)lastLoop).getConnections().contains(removedLoop) == false) {
                     ((Loop)lastLoop).addConnection(removedLoop);
@@ -203,13 +214,15 @@ public class loopLogic {
                 }
             }
 
+            if(nextSpace == null)
+                throw new IllegalArgumentException("Between Space does not exist for stitch " + nextID);
             if(nextSpace.size() > 0){
                 hookLoops.push(nextSpace);
             } else{
                 throw new IllegalArgumentException("Could not insert into between/chain space. Space does not exist");
             }
             insertedLast = true;
-        } else if (action.equals("move")) { // increments next connection
+        } else if (action.equals("move") || action.equals("skip")) { // increments next connection
             ArrayList<Loop> previousRow = loops.get(nextConnection.getRow());
             int connectionIndex = nextConnection.getIndex();
 
@@ -227,11 +240,7 @@ public class loopLogic {
             nextConnection = new twoItems(row, currRow.size() - 1);
             currRow = new ArrayList<Loop>();
             row++;
-        } else if (action.equals("skip")) {
-            int currIndex = nextConnection.getIndex();
-            nextConnection.setIndex(currIndex - 1);
-        } else {
-        }
+        } else {}
         actionIndex++;
     }
 
@@ -466,9 +475,46 @@ public class loopLogic {
 
     private void setBetweenSpace(){
         currBetween = new BetweenSpace(stitchCount);
-        if(post){
-                // all stitches with a post have a between space
-                // add top and top + 1 (last two loops on hook)
+        //check for chains
+        int index = currRow.size() - 1;
+        Loop prevLoop = currRow.get(index);
+         while(prevLoop.isTop()){
+            //add nextLoop
+            currBetween.addLoop(prevLoop);
+            index--;
+            if(index < 0)
+                break;
+            prevLoop = currRow.get(index);
+        }
+        //last loop added is the top of the previous stitch, so remove it from between space
+        if(!(currBetween.size() == 0))
+            currBetween.removeLoop(currBetween.size()-1);
+        //check if the current between space has the top of the current stitch
+        if(currBetween.size() != 0 || post){
+            currBetween.addLoop(nextTop);
+            int nextID = nextTop.getID() + 1;
+            for(HookElement e : hookLoops){
+                if(e instanceof Loop){
+                    if(((Loop)e).getID()==(nextID))
+                        currBetween.addLoop((Loop)e);
+                }
+            }
+        }
+        if(!currBetween.contains(nextTop)){
+            //this is a single crochet or slip stitch without any preceeding chains
+            //check if the previous stitch contains 8 or more loops
+            int numLoops = 0;
+            Loop prevTop = findNextTop();
+            ArrayList<Loop> prevRow = loops.get(loops.size() -1);
+            index = prevRow.indexOf(prevTop) - 1;
+            prevLoop = prevRow.get(index);
+            while(!prevLoop.isTop()){
+                numLoops++;
+                index--;
+                prevLoop = prevRow.get(index);
+            }
+            if(numLoops >= 8){
+                //add current stitch's top and next loop (if able) to current between space
                 currBetween.addLoop(nextTop);
                 int nextID = nextTop.getID() + 1;
                 for(HookElement e : hookLoops){
@@ -478,34 +524,7 @@ public class loopLogic {
                     }
                 }
             }
-            else{
-                //slip stitch and single crochet have yo, pt
-                //check if third next action is yo
-                if(actions.get(actionIndex + 3).equals("yo")) {   //single crochet
-                    //check previous stitch height
-                    //if(height >= 2)
-                    //add top and top+1 id to currBetween
-                }
-            }
-
-            //check for chains
-            int index = currRow.size() - 1;
-            Loop nextLoop = currRow.get(index);
-            while(nextLoop.isTop()){
-                //add nextLoop
-                currBetween.addLoop(nextLoop);
-                index--;
-                if(index < 0)
-                    break;
-                nextLoop = currRow.get(index);
-            }
-            //last loop added is the top of the previous stitch, so remove it from between space
-            currBetween.removeLoop(currBetween.size()-1);
-
-            //if(curr stitch == single crochet)
-            //check previous height
-            //if height >= 2
-            //add to between space
+        }
     }
 
     /**
