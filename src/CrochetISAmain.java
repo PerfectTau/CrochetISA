@@ -454,6 +454,9 @@ public class CrochetISAmain {
 						}
 						if (action.equals(SK)) {
 							connectionIndex--;
+							nextConnection = prevRow.get(connectionIndex);
+							nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
+							index--; 	//currRow index gets automatically incremented, even though skip isn't added to currRow
 						}
 						output.append(action + ", ");
 						actionsList.add(action);
@@ -466,7 +469,7 @@ public class CrochetISAmain {
 						}
 
 					}
-					if (!stitch.equals(TURN)) {
+					if (!stitch.equals(TURN) && !stitch.equals("sk")) {
 						if (!stitch.equals("ch")) {
 							output.append(MOVE + ", ");
 							actionsList.add(MOVE);
@@ -479,13 +482,13 @@ public class CrochetISAmain {
 					throw new IllegalArgumentException("Unrecognized stitch: " + stitch);
 				}
 				index++;
-				if (connectionIndex < 0) {
+				if (connectionIndex < 0 && !(stitch.equals(TURN) || stitch.equals("ch"))) {
 					scanner.close();
 					throw new IllegalArgumentException("Row " + z + " is too long. You may be missing increases.");
 				}
 				if (s < row.size() - 1) {
 					String nextStitch = row.get(s + 1);
-					if (!(connectionIndex == 0 && stitch.equals("ch"))) {
+					if (!(connectionIndex == 0 && (stitch.equals("ch") || stitch.equals("sk")))) {
 						if (connectionIndex - 1 < 0
 								&& !(nextStitch.equals("ch") || nextStitch.equals(TURN) || nextStitch.equals(SK))) {
 							System.out.println("Current Stitch: " + stitch + ", Next Stitch: " + nextStitch);
@@ -494,11 +497,19 @@ public class CrochetISAmain {
 									"Row " + z + " is too long. You may be missing increases.");
 						}
 					}
-					if (!stitch.equals("ch") && !endOfRow
-							&& !(row.get(s + 1).equals(TURN) || row.get(s + 1).equals("ch"))) {
+					if (!stitch.equals("ch") && !endOfRow && !stitch.equals("sk")
+							&& !(nextStitch.equals(TURN))) {
 						connectionIndex--;
-						nextConnection = prevRow.get(connectionIndex);
-						nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
+						if(connectionIndex > -1){
+							nextConnection = prevRow.get(connectionIndex);
+							nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
+						}else{
+							if(!nextStitch.equals("ch")){
+								scanner.close();
+								throw new IllegalArgumentException("Row " + z + " is too long.");
+							}
+						}
+
 					}
 				}
 			}
