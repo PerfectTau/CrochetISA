@@ -29,6 +29,10 @@ public class BetweenSpace implements HookElement{
         return loops.remove(index);
     }
 
+    public boolean contains(Loop loop){
+        return loops.contains(loop);
+    }
+
     public int size(){
         return loops.size();
     }
