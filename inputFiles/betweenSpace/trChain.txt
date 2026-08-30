@@ -1,0 +1,3 @@
+5ch, turn
+3ch, tr, 2ch, sk, tr, 2ch, sk, tr, turn
+3ch, 2[sptr, 2sk], sptr

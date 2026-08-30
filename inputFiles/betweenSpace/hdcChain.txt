@@ -1,0 +1,3 @@
+5ch, turn
+ch, hdc, 2ch, sk, hdc, 2ch, sk, hdc, turn
+ch, 2[sphdc, 2sk], sphdc
