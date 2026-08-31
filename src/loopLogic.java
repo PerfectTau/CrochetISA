@@ -477,18 +477,21 @@ public class loopLogic {
         currBetween = new BetweenSpace(stitchCount);
         //check for chains
         int index = currRow.size() - 1;
-        Loop prevLoop = currRow.get(index);
-         while(prevLoop.isTop()){
-            //add nextLoop
-            currBetween.addLoop(prevLoop);
-            index--;
-            if(index < 0)
-                break;
+        Loop prevLoop = null;
+        if(index < currRow.size() - 1){
             prevLoop = currRow.get(index);
+            while(prevLoop.isTop()){
+                //add nextLoop
+                currBetween.addLoop(prevLoop);
+                index--;
+                if(index < 0)
+                    break;
+                prevLoop = currRow.get(index);
+            }
+            //last loop added is the top of the previous stitch, so remove it from between space
+            if(!(currBetween.size() == 0))
+                currBetween.removeLoop(currBetween.size()-1);
         }
-        //last loop added is the top of the previous stitch, so remove it from between space
-        if(!(currBetween.size() == 0))
-            currBetween.removeLoop(currBetween.size()-1);
         //check if the current between space has the top of the current stitch
         if(currBetween.size() != 0 || post){
             currBetween.addLoop(nextTop);
@@ -503,17 +506,25 @@ public class loopLogic {
         if(!currBetween.contains(nextTop)){
             //this is a single crochet or slip stitch without any preceeding chains
             //check if the previous stitch contains 8 or more loops
-            int numLoops = 0;
-            Loop prevTop = findNextTop();
-            ArrayList<Loop> prevRow = loops.get(loops.size() -1);
-            index = prevRow.indexOf(prevTop) - 1;
-            prevLoop = prevRow.get(index);
-            while(!prevLoop.isTop()){
+            int numLoops = 1;
+            index = currRow.size() - 1;
+            if(index > -1)
+                prevLoop = currRow.get(index);
+            else
+                return;
+            // Loop prevTop = findNextTop();
+            // ArrayList<Loop> prevRow = loops.get(loops.size() -1);
+            // index = prevRow.indexOf(prevTop) - 1;
+            // prevLoop = prevRow.get(index);
+            int lastStitchID = stitchCount - 1;
+            while(prevLoop.getStitchID() == lastStitchID){
                 numLoops++;
                 index--;
-                prevLoop = prevRow.get(index);
+                if(index < 0)
+                    break;
+                prevLoop = currRow.get(index);
             }
-            if(numLoops >= 8){
+            if(numLoops >= 4){
                 //add current stitch's top and next loop (if able) to current between space
                 currBetween.addLoop(nextTop);
                 int nextID = nextTop.getID() + 1;
