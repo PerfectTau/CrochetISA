@@ -64,7 +64,7 @@ public class Parser {
                                 stitches.add(stitch);
                             tokens.remove(token);
                             // j++;
-                            if (j < tokens.size() - 1) {
+                            if (j < tokens.size()) {
                                 token = tokens.get(j);
                                 while (!token.matches(".*]$")) {
                                     index = checkMultiple(token, stitches, j);
