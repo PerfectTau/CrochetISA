@@ -76,7 +76,7 @@ public class loopLogic {
             HookElement previousLoop = hookLoops.peek();
             if (previousLoop instanceof Loop && ((Loop) previousLoop).getID() == loopID) {
                 newLoop.addConnection(previousLoop);
-            } else {
+            } else if(currRow.size() > 0){
                 for (int i = currRow.size() - 1; i >= 0; i--) {
                     Loop l = currRow.get(i);
                     if (l.getID() == loopID) {
@@ -84,8 +84,18 @@ public class loopLogic {
                         break;
                     }
                 }
-                if (previousLoop instanceof Loop) {
-                    if (((Loop) previousLoop).getID() != loopID) {
+            } else if(hookLoops.size() > 1){
+                for(HookElement e : hookLoops){
+                    if(e instanceof Loop){
+                        if(((Loop)e).getID() == loopID){
+                            newLoop.addConnection(e);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                //if (previousLoop instanceof Loop) {
+                    //if (((Loop) previousLoop).getID() != loopID) {
                         ArrayList<Loop> previousRow = loops.get(loops.size() - 1);
                         for (int i = previousRow.size() - 1; i >= 0; i--) {
                             Loop l = previousRow.get(i);
@@ -94,8 +104,8 @@ public class loopLogic {
                                 break;
                             }
                         }
-                    }
-                }
+                    //}
+                //}
             }
             hookLoops.push(newLoop);
         } else if (action.equals("pt")) { // pull through
@@ -492,7 +502,7 @@ public class loopLogic {
             if(!(currBetween.size() == 0))
                 currBetween.removeLoop(currBetween.size()-1);
         }
-        //check if the current between space has the top of the current stitch
+        //add top loop and top loop + 1 of the current working stitch if the currBetween exists, or this stitch has a post
         if(currBetween.size() != 0 || post){
             currBetween.addLoop(nextTop);
             int nextID = nextTop.getID() + 1;
@@ -505,22 +515,32 @@ public class loopLogic {
         }
         if(!currBetween.contains(nextTop)){
             //this is a single crochet or slip stitch without any preceeding chains
-            //check if the previous stitch contains 8 or more loops
-            int numLoops = 1;
+            //check if the previous stitch contains 4 or more loops
+            int numLoops = 0;
             index = currRow.size() - 1;
             if(index > -1)
                 prevLoop = currRow.get(index);
             else
                 return;
-            // Loop prevTop = findNextTop();
-            // ArrayList<Loop> prevRow = loops.get(loops.size() -1);
-            // index = prevRow.indexOf(prevTop) - 1;
-            // prevLoop = prevRow.get(index);
             int lastStitchID = stitchCount - 1;
             while(prevLoop.getStitchID() == lastStitchID){
                 numLoops++;
                 index--;
                 if(index < 0)
+                    break;
+                // if the previousLoop was inserted into the fabric, stop
+                // this means that the previousLoop connectedTo list will be more than one?
+                ArrayList<HookElement> connections = prevLoop.getConnections();
+                boolean broke = false;
+                if(connections.size() > 1){
+                    for(HookElement e : connections){
+                        if(!currRow.contains(e)){
+                            broke = true;
+                            break;
+                        }
+                    }
+                }
+                if(broke)
                     break;
                 prevLoop = currRow.get(index);
             }
