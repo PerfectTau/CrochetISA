@@ -281,23 +281,6 @@ public class loopLogic {
                 throw new IllegalArgumentException("Last element is not a loop.");
             HookElement removedLoop = null;
             ArrayList<HookElement> connections = lastLoop.getConnections();
-            // int lastID = connections.get(connections.size() - 1);
-            // if (currRow.size() <= 0) { // if currRow is empty, get last inserted loop from previous row
-            //     removedLoop = getLastInsertedLoop(lastID);
-            //     if (removedLoop.equals(null))
-            //         throw new IllegalArgumentException("Couldn't find last loop");
-            // } else { // if currRow is not empty, try the latest loop pushed to the current row list
-            //     removedLoop = currRow.get(currRow.size() - 1);
-            // }
-            // if (removedLoop.getID() != lastID) { // if the latest loop in currRow isn't the connected Element, get the connection from the previous row
-            //     removedLoop = getLastInsertedLoop(lastID);
-            //     if (removedLoop.equals(null))
-            //         throw new IllegalArgumentException("Couldn't find last loop");
-
-            // } else {
-            //     // removed removedLoop from currRow
-            //     currRow.remove(removedLoop);
-            // }
             removedLoop = connections.get(connections.size() - 1);
             if(removedLoop instanceof Loop){
                 if(currRow.remove(removedLoop) == false){
@@ -405,58 +388,6 @@ public class loopLogic {
         } else {
         }
     }
-
-    // /**
-    //  * Gets the last loop that the pattern inserted into using its ID
-    //  * 
-    //  * @param lastID the ID of the loop to find
-    //  * @return the loop that was last inserted into
-    //  */
-    // private Loop getLastInsertedLoop(int lastID) {
-    //     ArrayList<Loop> lastRow = loops.get(loops.size() - 1);
-    //     for (int i = lastRow.size() - 1; i >= 0; i--) {
-    //         Loop currLoop = lastRow.get(i);
-    //         if (currLoop.getID() == lastID) {
-    //             insertedLast = true;
-    //             return currLoop;
-    //         }
-    //     }
-    //     insertedLast = true;
-    //     return null;
-    // }
-
-    /**
-     * Finds next stitch top loop
-     * @return the Top insertion point loop for the next stitch (excluding chains)
-     */
-    // private Loop findNextTop(){
-    //     int connectionIndex = nextConnection.getIndex();
-    //     ArrayList<Loop> previousRow = loops.get(nextConnection.getRow());
-    //     Loop nextLoop = null;
-    //     for (int i = connectionIndex; i >= 0; i--) {
-    //         nextLoop = previousRow.get(i);
-    //         if (nextLoop.isTop()){
-    //             int nextIndex = i-1;
-    //             if(nextIndex < previousRow.size()-1 && nextIndex > 0){
-    //                 if(previousRow.get(i-1).isTop() && nextConnection.getRow() > 0)
-    //                     continue;   // if the next loop is also a top, then it is a chain
-    //                 else{
-    //                     connectionIndex = i;
-    //                     break;
-    //                 }
-    //             }
-    //             else{
-    //                 connectionIndex = i;
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     if (nextLoop == null)
-    //         throw new IllegalArgumentException("No stitches available in previous row (current row: " + row + ")");
-    //     System.out.println("Next Top: " + nextLoop);
-    //     nextConnection.setIndex(connectionIndex);
-    //     return nextLoop;
-    // }
 
     private Loop findNextTop(){
         int connectionIndex = nextConnection.getIndex();
