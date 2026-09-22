@@ -1,0 +1,3 @@
+5ch, turn
+dc2tog, sc, turn
+ch, 2spsc
