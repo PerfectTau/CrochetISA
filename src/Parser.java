@@ -41,13 +41,6 @@ public class Parser {
                         throw new IllegalArgumentException("Error: 'turn' must be the last token on a line: " + line);
                     }
                     Matcher matcher = pattern.matcher(token);
-                    // if(matcher.matches()){
-                    // // Process the matched groups
-                    // String count = matcher.group(1);
-                    // String stitch = matcher.group(2);
-                    // int blockCount = Integer.parseInt(count);
-                    // //check if block repeat
-                    // ArrayList<String> stitches = new ArrayList<String>();
                     if (matcher.matches()) {
                         String count = matcher.group(1);
                         String stitch = matcher.group(3);
@@ -60,10 +53,10 @@ public class Parser {
                         // String firstStitch = stitch.substring(1);
                         if (!stitch.matches(".*]$")) {
                             int index = checkMultiple(stitch, stitches, 0);
-                            if (index == 0) // add
+                            if (index == 0) // didn't change index, so needs to be added
                                 stitches.add(stitch);
                             tokens.remove(token);
-                            // j++;
+                            
                             if (j < tokens.size()) {
                                 token = tokens.get(j);
                                 while (!token.matches(".*]$")) {
@@ -80,7 +73,6 @@ public class Parser {
                                 index = checkMultiple(lastStitch, stitches, stitches.size());
                                 if(stitches.size() == prevSize)
                                     stitches.add(lastStitch);
-                                //stitches.add(token.substring(0, token.length() - 1));
                                 tokens.remove(token);
                             }
                         } else{
@@ -100,7 +92,6 @@ public class Parser {
                         }
                     } else if (token.matches("^\\d+.*"))
                         j = checkMultiple(token, tokens, j);
-                    // }
                 }
                 rows.add(tokens);
                 System.out.println("Row " + i + ": " + tokens.toString());
@@ -126,6 +117,8 @@ public class Parser {
             // Process the matched groups
             String count = matcher.group(1);
             String stitch = matcher.group(2);
+            if(stitch.matches(".*}$"))
+                stitch = stitch.substring(0, stitch.length()-1);
             int countInt = Integer.parseInt(count);
             for (int k = 0; k < countInt; k++) {
                 tokens.add(index, stitch);
