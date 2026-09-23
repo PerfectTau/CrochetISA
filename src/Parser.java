@@ -63,8 +63,9 @@ public class Parser {
                                     index = checkMultiple(token, stitches, j);
                                     if (index == j) { // if the index stayed the same, then the stitch needs to be added
                                         stitches.add(token);
-                                        tokens.remove(token);
                                     }
+                                    tokens.remove(token);
+                                    // Goal: get the token after the one to be removed
                                     token = tokens.get(j);
                                 }
                                 // add last token minus ']'
@@ -90,8 +91,10 @@ public class Parser {
                                 j++;
                             }
                         }
-                    } else if (token.matches("^\\d+.*"))
+                        j--;
+                    } else {
                         j = checkMultiple(token, tokens, j);
+                    }
                 }
                 rows.add(tokens);
                 System.out.println("Row " + i + ": " + tokens.toString());
@@ -112,20 +115,58 @@ public class Parser {
 
     private int checkMultiple(String token, ArrayList<String> tokens, int index) {
         Pattern pattern = Pattern.compile("^(\\d+)(.*)");
+        Pattern beginningCurly = Pattern.compile("^\\{.*");
+        boolean begCurl = false;
+        Pattern endCurly = Pattern.compile(".*\\}$");
+        boolean endCurl = false;
         Matcher matcher = pattern.matcher(token);
+        Matcher beginning = beginningCurly.matcher(token);
+        Matcher ending = endCurly.matcher(token);
+        begCurl = beginning.matches();
+        endCurl = ending.matches();
+        int startIndex = index;
+        String startToken = token;
+        if(begCurl){
+            token = token.substring(1);
+            matcher = pattern.matcher(token);
+        }
+
         if (matcher.matches()) {
             // Process the matched groups
             String count = matcher.group(1);
             String stitch = matcher.group(2);
-            if(stitch.matches(".*}$"))
-                stitch = stitch.substring(0, stitch.length()-1);
+
+            if(endCurl){
+                stitch = stitch.substring(0, stitch.length() - 1);
+            }
             int countInt = Integer.parseInt(count);
             for (int k = 0; k < countInt; k++) {
                 tokens.add(index, stitch);
                 index++;
             }
             index--;
-            tokens.remove(token);
+            tokens.remove(startToken);
+        }
+        if(begCurl){
+            //add beginning curly brace to first stitch
+            if(tokens.size() > startIndex){
+                String firstStitch = tokens.get(startIndex);
+                if(!firstStitch.matches("^\\{.*")){
+                    tokens.remove(index);
+                    firstStitch = "{" + firstStitch;
+                    tokens.add(startIndex, firstStitch);
+                }
+            }
+        }
+        if(endCurl){
+            if(tokens.size() > index){
+                String lastStitch = tokens.get(index);
+                if(!lastStitch.matches(".*\\}$")){
+                    tokens.remove(index);
+                    lastStitch = lastStitch + "}";
+                    tokens.add(index, lastStitch);
+                }
+            }
         }
         return index;
     }

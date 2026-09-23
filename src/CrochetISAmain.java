@@ -187,9 +187,18 @@ public class CrochetISAmain {
 			}
 			boolean endOfRow = false;
 			boolean firstStitchCH = true;
+			//boolean curlyBracket = false;
 			String firstStitch = row.get(0);
 			Pattern incDecPattern = Pattern.compile("^(.*)(\\d+)(tog|inc|bobble|puff)$");
+			Pattern curlyBracketPattern = Pattern.compile("(^\\{)(.*)");
 			Matcher firstStitchMatcher = incDecPattern.matcher(firstStitch);
+			Matcher curlyBracketMatcher = curlyBracketPattern.matcher(firstStitch);
+			if (curlyBracketMatcher.matches()) {
+				firstStitch = curlyBracketMatcher.group(2);
+				if(firstStitch.matches("(.*)(\\})$")){
+					firstStitch = firstStitch.substring(0, firstStitch.length()-1);
+				}
+			}
 			if (firstStitchMatcher.matches()) {
 				firstStitch = firstStitchMatcher.group(1);
 			}
@@ -220,8 +229,20 @@ public class CrochetISAmain {
 				nextConnection = prevRow.get(connectionIndex);
 				nextConnectionItem = new twoItems(nextConnection.row, nextConnection.index);
 			}
+			boolean insertMove = true;
 			for (int s = 0; s < row.size(); s++) {
 				String stitch = row.get(s);
+				//check for curly brackets (multiple stitches in one stitch)
+				curlyBracketMatcher = curlyBracketPattern.matcher(stitch);
+				
+				if(curlyBracketMatcher.matches()){
+					stitch = curlyBracketMatcher.group(2);
+					insertMove = false;
+				}
+				if(Pattern.matches("(.*)(}$)", stitch)){
+					stitch = stitch.replace("}", "");
+					insertMove = true;
+				}
 				// check attach point
 				attach = top;
 				if (Pattern.matches(".*fl", stitch)) {
@@ -302,8 +323,10 @@ public class CrochetISAmain {
 							currRow.add(newStitch);
 						}
 						index--;
-						output.append(MOVE + ", ");
-						actionsList.add(MOVE);
+						if(insertMove){
+							output.append(MOVE + ", ");
+							actionsList.add(MOVE);
+						}
 					} else if(operation.equals("tog")) {
 						// Decrease
 						currentStitch.addConnection(nextConnectionItem);
@@ -327,7 +350,7 @@ public class CrochetISAmain {
 								output.append(action + ", ");
 								actionsList.add(action);
 							}
-							if (i < count - 1) {
+							if (i < count - 1 && insertMove) {
 								output.append(MOVE + ", ");
 								actionsList.add(MOVE);
 							}
@@ -348,8 +371,10 @@ public class CrochetISAmain {
 						}
 						currRow.add(currentStitch);
 						currentLoops = 0;
-						output.append(MOVE + ", ");
-						actionsList.add(MOVE);
+						if(insertMove){
+							output.append(MOVE + ", ");
+							actionsList.add(MOVE);
+						}
 
 					}
 					else if(operation.equals("bobble") || operation.equals("puff")) {
@@ -395,8 +420,10 @@ public class CrochetISAmain {
 							actionsList.add(PT);
 						}
 						currRow.add(currentStitch);
-						output.append(MOVE + ", ");
-						actionsList.add(MOVE);
+						if(insertMove){
+							output.append(MOVE + ", ");
+							actionsList.add(MOVE);
+						}
 					}
 				}
 				// Standard (non-increase/decrease) Stitch processing
@@ -471,8 +498,10 @@ public class CrochetISAmain {
 					}
 					if (!stitch.equals(TURN) && !stitch.equals("sk")) {
 						if (!stitch.equals("ch")) {
-							output.append(MOVE + ", ");
-							actionsList.add(MOVE);
+							if(insertMove){
+								output.append(MOVE + ", ");
+								actionsList.add(MOVE);
+							}
 							currentStitch.addConnection(nextConnectionItem);
 						}
 						currRow.add(currentStitch);
@@ -490,7 +519,8 @@ public class CrochetISAmain {
 					String nextStitch = row.get(s + 1);
 					if (!(connectionIndex == 0 && (stitch.equals("ch") || stitch.equals("sk")))) {
 						if (connectionIndex - 1 < 0
-								&& !(nextStitch.equals("ch") || nextStitch.equals(TURN) || nextStitch.equals(SK))) {
+								&& !(nextStitch.equals("ch") || nextStitch.equals(TURN) || nextStitch.equals(SK))
+								&& insertMove) {
 							System.out.println("Current Stitch: " + stitch + ", Next Stitch: " + nextStitch);
 							scanner.close();
 							throw new IllegalArgumentException(
@@ -498,7 +528,7 @@ public class CrochetISAmain {
 						}
 					}
 					if (!stitch.equals("ch") && !endOfRow && !stitch.equals("sk")
-							&& !(nextStitch.equals(TURN))) {
+							&& !nextStitch.equals(TURN) && insertMove) {
 						connectionIndex--;
 						if(connectionIndex > -1){
 							nextConnection = prevRow.get(connectionIndex);
