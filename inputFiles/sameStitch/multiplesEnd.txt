@@ -1,0 +1,2 @@
+5ch, turn
+2dc, {dc, sc, 2dc}

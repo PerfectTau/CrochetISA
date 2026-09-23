@@ -1,0 +1,2 @@
+5ch, turn
+sc, dc, 2[{hdc, dc, 3hdc}]
