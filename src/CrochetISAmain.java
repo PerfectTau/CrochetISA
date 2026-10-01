@@ -40,14 +40,30 @@ public class CrochetISAmain {
 		ArrayList<String> actionsList = new ArrayList<String>();
 		StitchDictionary stitchMap = new StitchDictionary();
 		Scanner scanner = new Scanner(System.in);
-		String filename;
-		if (args.length == 1)
-			filename = args[0];
-		else {
+		boolean inputFile = false;
+		boolean autorun = false;
+		boolean verbose = false;
+		String filename = null;
+		if (args.length > 0){
+			for(int i = 0; i < args.length; i++){
+				String currArg = args[i];
+				if(currArg.equals("-f")){
+					// filename argument included
+					i++;
+					inputFile = true;
+					filename = args[i];
+				}
+				else if(currArg.equals("-autorun"))
+					autorun = true;
+				else if(currArg.equals("-v") || currArg.equals("-verbose")){
+					verbose = true;
+				}
+			}
+		} if(!inputFile){
 			System.out.println("Enter the file path to pattern: ");
 			filename = scanner.nextLine();
 		}
-		filename = filename.replaceAll("\"", "");
+		
 		Parser parser = new Parser(filename);
 		ArrayList<ArrayList<Stitch>> stitchRows = new ArrayList<ArrayList<Stitch>>();
 		String attachPoint = TOP;
@@ -492,7 +508,12 @@ public class CrochetISAmain {
 			}
 		}
 		System.out.println();
-		stepThroughPattern(actionsList, scanner);
+		if(autorun){
+			autorunPattern(actionsList, verbose);
+		}
+		else{
+			stepThroughPattern(actionsList, scanner);
+		}
 		// drawGraph graph = new drawGraph(stitchRows);
 		// graph.paintComponent(graph.getGraphics());
 		scanner.close();
@@ -533,7 +554,7 @@ public class CrochetISAmain {
 				if (done)
 					System.out.println("Done.");
 				else {
-					System.out.println("Processing Final Action");
+					System.out.println("Processing Final Action: " + actions.get(actions.size() - 1));
 					done = true;
 				}
 			} else {
@@ -557,9 +578,33 @@ public class CrochetISAmain {
 				System.out.println("To go back one action press 'b' ");
 				System.out.println("To exit type 'exit' ");
 			}
-			if (nextLine.equals("exit"))
+			if (nextLine.equals("exit") || nextLine.equals("e") || nextLine.equals("E"))
 				break;
 		}
+	}
+
+	private static void autorunPattern(ArrayList<String> actions, boolean verbose){
+		loopLogic logic = new loopLogic(actions);
+		for(int i = 0; i < actions.size(); i++){
+			try {
+				logic.processNextAction();
+				if(verbose){
+					ArrayList<ArrayList<Loop>> loops = logic.getLoops();
+					for (int j = 0; j < loops.size(); j++) {
+						ArrayList<Loop> row = loops.get(j);
+						System.out.println("Row " + i + ": " + row.toString());
+					}
+					System.out.println("Row " + loops.size() + ": " + logic.getCurrRow());
+					System.out.println("Hook: " + logic.getHook());
+					System.out.println("Next Action: "+ actions.get(i));
+				}
+			} catch (Exception e) {
+				System.out.println("Error: " + e.getMessage());
+				System.out.println("Exiting Program...");
+				return;
+			}
+		}
+		System.out.println("Successfully simulated pattern.");
 	}
 
 	/**
