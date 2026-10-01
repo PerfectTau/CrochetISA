@@ -1,0 +1,3 @@
+4ch, turn
+hdc, sc, hdc, turn
+ch, 3spsc

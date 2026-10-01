@@ -1,3 +1,0 @@
-5ch, turn
-hdc3tog, sc, turn
-ch, 2spsc
