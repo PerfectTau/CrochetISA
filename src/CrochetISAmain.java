@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,7 +76,11 @@ public class CrochetISAmain {
 
 		// Parse initial strings to action values
 		if (parser.newStitches) {
-			// implement this functionality
+			HashMap<String, ArrayList<String>> newStitchMap = parser.getNewStitches();
+			for (String newStitch : newStitchMap.keySet()) {
+				ArrayList<String> actions = newStitchMap.get(newStitch);
+				stitchMap.stitchMap.put(newStitch, actions);
+			}
 		}
 		ArrayList<ArrayList<String>> rows = parser.getRows();
 		int currentLoops = 0;

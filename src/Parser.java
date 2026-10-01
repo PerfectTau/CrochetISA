@@ -5,11 +5,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class Parser {
     File file;
     ArrayList<ArrayList<String>> rows;
     boolean newStitches;
+    HashMap<String, ArrayList<String>> newStitchMap = new HashMap<String, ArrayList<String>>();
 
     public Parser(String filename) {
         file = new File(filename);
@@ -25,18 +27,33 @@ public class Parser {
             scanner.close();
             for (int i = 0; i < fileLines.size(); i++) {
                 String line = fileLines.get(i);
-                if (!line.endsWith("turn") && i < fileLines.size() - 1) {
-                    throw new IllegalArgumentException(
-                            "Error: non-final lines must end with 'turn': Line " + i + ": " + line);
-                }
-                // TODO: add user defined stitch capability
+               
                 line = line.trim();
                 line = line.replace(" ", "");
+                if(line.length() < 1 || line.startsWith("#")) {
+                    continue;
+                }
                 line = line.toLowerCase();
                 ArrayList<String> tokens = new ArrayList<String>(Arrays.asList(line.split(",")));
                 Pattern pattern = Pattern.compile("^(\\d?)(\\[)(.*)");
+                boolean newStitchFound = false;
                 for (int j = 0; j < tokens.size(); j++) {
                     String token = tokens.get(j);
+                    Pattern newStitchPattern = Pattern.compile("^(new)(.*)(=)(.*)");
+                    Matcher newStitchMatcher = newStitchPattern.matcher(token);
+                    if(newStitchMatcher.matches()) {
+                        // next token is the name of the new stitch, and the following tokens are the actions for that stitch
+                        String newStitchName = newStitchMatcher.group(2);
+                        String newStitchActionsString = newStitchMatcher.group(4);
+                        ArrayList<String> newStitchActions = new ArrayList<String>(Arrays.asList(newStitchActionsString.split(",")));
+                        for(int k = j+1; k < tokens.size(); k++){
+                            newStitchActions.add(tokens.get(k));
+                        }
+                        checkNewStitchValidity(newStitchActions);
+                        newStitchMap.put(newStitchName, newStitchActions);
+                        newStitchFound = true;
+                        break;
+                    }
                     if (token.equals("turn") && j != tokens.size() - 1) {
                         throw new IllegalArgumentException("Error: 'turn' must be the last token on a line: " + line);
                     }
@@ -65,7 +82,6 @@ public class Parser {
                                         stitches.add(token);
                                     }
                                     tokens.remove(token);
-                                    // Goal: get the token after the one to be removed
                                     token = tokens.get(j);
                                 }
                                 // add last token minus ']'
@@ -96,8 +112,14 @@ public class Parser {
                         j = checkMultiple(token, tokens, j);
                     }
                 }
+                if(!newStitchFound){
                 rows.add(tokens);
                 System.out.println("Row " + i + ": " + tokens.toString());
+                 if (!line.endsWith("turn") && i < fileLines.size() - 1) {
+                    throw new IllegalArgumentException(
+                            "Error: non-final lines must end with 'turn': Line " + i + ": " + line);
+                }
+            }
             }
         } catch (FileNotFoundException e) {
             System.out.println("Error: File not found.");
@@ -111,6 +133,10 @@ public class Parser {
 
     public boolean newStitches() {
         return newStitches;
+    }
+
+    public HashMap<String, ArrayList<String>> getNewStitches() {
+        return newStitchMap;
     }
 
     private int checkMultiple(String token, ArrayList<String> tokens, int index) {
@@ -169,5 +195,34 @@ public class Parser {
             }
         }
         return index;
+    }
+
+    private void checkNewStitchValidity(ArrayList<String> actions) {
+        int yoCount = 0;
+        int insCount = 0;
+        int ptCount = 0;
+        String lastAction = "";
+        for (String action : actions){
+            if(action.equals("yo")){
+                yoCount++;
+            } else if(action.equals("insert") || action.equals("ins")){
+                insCount++;
+            } else if(action.equals("pt")){
+                ptCount++;
+                if(lastAction.equals("ins")){
+                    throw new IllegalArgumentException("Error in stitch definition: Cannot pull through an attach point (ins, pt) is invalid. Did you mean (ins, yo, pt)?");
+                }
+            } else if(action.equals("sk")){
+
+            } else{
+                System.out.println("WARNING: Invalid action in stitch definition: " + action + ". Valid actions are: yo, ins, pt, sk");
+            }
+            lastAction = action;
+        }
+        if(ptCount < (insCount + yoCount)){
+            System.out.println("yoCount: " + yoCount + ", insCount: " + insCount + ", ptCount: " + ptCount);
+            throw new IllegalArgumentException("Error in stitch definition: Not enough pull through instructions to finish stitch. pt must be equals to ins + yo");
+        }
+        newStitches = true;
     }
 }
