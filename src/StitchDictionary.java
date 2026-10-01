@@ -11,7 +11,7 @@ public class StitchDictionary {
         String PT = "pt";
         String YO = "yo";
         String SK = "skip";
-        String TURN = "turn";
+        String TURN = "turn"; 
 		String[] ch = { YO, PT };
 		String[] sc = { INSERT, YO, PT, "decrease", YO, PT, PT };
 		String[] hdc = { YO, INSERT, YO, PT, "decrease", YO, PT, PT, PT };

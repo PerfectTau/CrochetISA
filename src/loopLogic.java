@@ -166,7 +166,7 @@ public class loopLogic {
 
             // check if this stitch should create a post
             setPost();
-            System.out.println("CurrPost: " + currPost + "; CurrPost Loops: " + currPost.getLoops());
+            System.out.println("CurrPost: " + currPost);
             savePost();
 
             //Check if a between space is created and add loops to be included
@@ -460,7 +460,6 @@ public class loopLogic {
                 if(index < 0)
                     break;
                 // if the previousLoop was inserted into the fabric, stop
-                // this means that the previousLoop connectedTo list will be more than one?
                 ArrayList<HookElement> connections = prevLoop.getConnections();
                 boolean broke = false;
                 if(connections.size() > 1){
